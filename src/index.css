@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0F172A;
+  --color-surface: #1E293B;
+  --color-border-col: #334155;
+  --color-emerald: #10B981;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background-color: #0F172A;
+  font-family: 'Inter', sans-serif;
+  color: #F8FAFC;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Monospace Console and General Layout */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-card {
+  animation: fadeSlideUp 400ms ease-out both;
+}
+
+@keyframes criticalPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.8); }
+  70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 0.8); }
+}
+.animate-critical-pulse {
+  animation: criticalPulse 2s infinite;
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+@keyframes agentRunning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-agent-running {
+  animation: agentRunning 1s ease-in-out infinite;
+}
+
+/* Glassmorphism details */
+.glass-panel {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+}
