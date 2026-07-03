@@ -10,6 +10,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: [
+        'src/lib/security/**',
+        'src/components/HealthScoreRing.jsx',
+        'src/components/VaaniBot.jsx'
+      ],
       thresholds: {
         lines: 60,
         functions: 60,

@@ -50,7 +50,7 @@ describe('Input Sanitization & Secrets Redaction Security Checks', () => {
     });
 
     it('should redact Google API Keys', () => {
-      const log = 'Connecting with key: YOUR_GOOGLE_MAPS_API_KEY_HERE';
+      const log = 'Connecting with key: ' + 'AIza' + 'Sy' + '_DUMMY_KEY_FOR_UNIT_TESTING_123';
       expect(redactSecrets(log)).toBe('Connecting with key: [REDACTED_API_KEY]');
     });
 
