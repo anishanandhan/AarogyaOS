@@ -1,20 +1,38 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import { getTranslation } from '../i18n/translations';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { Activity, Bed, TrendingUp, ChevronRight } from 'lucide-react';
+import { Activity, Bed, TrendingUp, ChevronRight, Brain, Loader2, BarChart3, CheckCircle } from 'lucide-react';
+import { predictPatientFootfall } from '../services/bigquery';
 
 export default function FootfallPage() {
-  const { centres } = useApp();
+  const { centres, language } = useApp();
   const [selectedCentreId, setSelectedCentreId] = useState('phc-001');
+  const [prediction, setPrediction] = useState(null);
+  const [isPredicting, setIsPredicting] = useState(false);
+
+  // Run BigQuery ML prediction
+  const handlePredict = async () => {
+    setIsPredicting(true);
+    try {
+      const selectedCentre = centres.find(c => c.id === selectedCentreId);
+      const result = await predictPatientFootfall(selectedCentre?.name || 'Walajah PHC', 7);
+      setPrediction(result);
+    } catch (error) {
+      console.error('[BigQuery] Prediction error:', error);
+    } finally {
+      setIsPredicting(false);
+    }
+  };
 
   // Footfall data generator (with defaults for unseeded centres)
   const getFootfallSeries = (cId) => {
@@ -94,7 +112,7 @@ export default function FootfallPage() {
         <div className="rounded-xl border border-border-col bg-surface p-5 lg:col-span-4 space-y-4 animate-card" style={{ animationDelay: '0ms' }}>
           <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-border-col/40 pb-3">
             <Activity size={14} className="text-emerald" />
-            <span>District Footfall & Capacity Check</span>
+            <span>{getTranslation('districtFootfallCapacityCheck', language)}</span>
           </h2>
 
           <div className="space-y-3 overflow-y-auto max-h-[500px] pr-1">
@@ -123,7 +141,7 @@ export default function FootfallPage() {
                       <span className="text-xs font-bold text-text-primary">{todayVal} OPD</span>
                       {isSurging && (
                         <span className="rounded bg-warning/20 text-warning border border-warning/30 px-1 py-0.5 text-[8px] font-bold animate-pulse">
-                          SURGE RISK
+                          {getTranslation('surgeRisk', language)}
                         </span>
                       )}
                     </div>
@@ -133,9 +151,9 @@ export default function FootfallPage() {
                     <div className="flex justify-between text-[9px] font-mono text-text-secondary">
                       <span className="flex items-center gap-1">
                         <Bed size={9} />
-                        <span>Beds</span>
+                        <span>{getTranslation('beds', language)}</span>
                       </span>
-                      <span>{c.bedsOccupied}/{c.bedsTotal} occupied</span>
+                      <span>{c.bedsOccupied}/{c.bedsTotal} {getTranslation('occupied', language)}</span>
                     </div>
                     <div className="h-1 w-full bg-navy rounded overflow-hidden">
                       <div 
@@ -173,11 +191,11 @@ export default function FootfallPage() {
               {getSurgeInfo(selectedCentreId).isSurging ? (
                 <div className="flex items-center gap-1 rounded-lg border border-warning/30 bg-warning/5 px-3 py-1.5 text-xs text-warning font-mono">
                   <TrendingUp size={14} />
-                  <span>Surge Detected: +{Math.round((getSurgeInfo(selectedCentreId).todayVal / getSurgeInfo(selectedCentreId).avgVal - 1) * 100)}%</span>
+                  <span>{getTranslation('surgeDetected', language)}: +{Math.round((getSurgeInfo(selectedCentreId).todayVal / getSurgeInfo(selectedCentreId).avgVal - 1) * 100)}%</span>
                 </div>
               ) : (
                 <div className="rounded-lg border border-emerald/20 bg-emerald/5 px-3 py-1.5 text-xs text-emerald font-mono">
-                  <span>Nominal Patient Traffic</span>
+                  <span>{getTranslation('nominalPatientTraffic', language)}</span>
                 </div>
               )}
             </div>
@@ -185,12 +203,12 @@ export default function FootfallPage() {
             {/* Analysis details */}
             <div className="my-5 grid grid-cols-2 gap-4 rounded-lg bg-navy/40 p-3.5 border border-border-col/35 font-mono text-xs">
               <div>
-                <span className="text-[9px] text-text-muted font-sans uppercase">Today's Traffic</span>
-                <p className="font-bold text-text-primary mt-0.5">{getSurgeInfo(selectedCentreId).todayVal} patients</p>
+                <span className="text-[9px] text-text-muted font-sans uppercase">{getTranslation('todaysTraffic', language)}</span>
+                <p className="font-bold text-text-primary mt-0.5">{getSurgeInfo(selectedCentreId).todayVal} {getTranslation('patients', language)}</p>
               </div>
               <div>
-                <span className="text-[9px] text-text-muted font-sans uppercase">6-Day Average Traffic</span>
-                <p className="font-bold text-text-secondary mt-0.5">{getSurgeInfo(selectedCentreId).avgVal} patients/day</p>
+                <span className="text-[9px] text-text-muted font-sans uppercase">{getTranslation('sixDayAverageTraffic', language)}</span>
+                <p className="font-bold text-text-secondary mt-0.5">{getSurgeInfo(selectedCentreId).avgVal} {getTranslation('patientsPerDay', language)}</p>
               </div>
             </div>
 
@@ -217,16 +235,127 @@ export default function FootfallPage() {
                     itemStyle={{ color: '#F8FAFC', fontFamily: 'monospace', fontSize: '10px' }}
                   />
                   <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'monospace', paddingTop: '15px' }} />
-                  <Area type="monotone" dataKey="opd" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#opdGrad)" name="OPD Footfall" />
-                  <Area type="monotone" dataKey="ipd" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#ipdGrad)" name="IPD Admissions" />
+                  <Area type="monotone" dataKey="opd" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#opdGrad)" name={getTranslation('opdFootfall', language)} />
+                  <Area type="monotone" dataKey="ipd" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#ipdGrad)" name={getTranslation('ipdAdmissions', language)} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           <p className="mt-4 text-center text-[9px] text-text-muted font-mono leading-relaxed">
-            Data sourced from Vellore health registration database. Predictions recalculated every 24 hours.
+            {getTranslation('dataSourcedFromVellore', language)}
           </p>
+        </div>
+
+        {/* BigQuery ML Prediction Panel */}
+        <div className="rounded-xl border border-border-col bg-surface p-5 animate-card" style={{ animationDelay: '100ms' }}>
+          <div className="flex items-center justify-between border-b border-border-col pb-3">
+            <div className="flex items-center gap-2">
+              <Brain size={16} className="text-info" />
+              <h2 className="text-sm font-bold text-text-primary">BigQuery ML Footfall Forecast</h2>
+            </div>
+            <button
+              onClick={handlePredict}
+              disabled={isPredicting}
+              className="flex items-center gap-2 rounded-lg bg-info/10 border border-info/30 px-3 py-1.5 text-xs font-semibold text-info hover:bg-info/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isPredicting ? (
+                <>
+                  <Loader2 size={12} className="animate-spin" />
+                  <span>Predicting...</span>
+                </>
+              ) : (
+                <>
+                  <BarChart3 size={12} />
+                  <span>Predict Next 7 Days</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {prediction ? (
+            <div className="mt-4 space-y-4">
+              {/* Prediction Summary */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-lg border border-border-col bg-navy/30 p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle size={14} className="text-emerald" />
+                    <span className="text-[10px] font-semibold text-text-muted uppercase">Model</span>
+                  </div>
+                  <p className="text-xs font-bold text-text-primary font-mono">{prediction.model}</p>
+                  <p className="text-[9px] text-text-secondary mt-0.5">Time-series ML</p>
+                </div>
+
+                <div className="rounded-lg border border-border-col bg-navy/30 p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Activity size={14} className="text-info" />
+                    <span className="text-[10px] font-semibold text-text-muted uppercase">Avg Footfall</span>
+                  </div>
+                  <p className="text-xs font-bold text-text-primary font-mono">{prediction.insights.averageDailyFootfall} patients/day</p>
+                  <p className="text-[9px] text-text-secondary mt-0.5">7-day forecast</p>
+                </div>
+
+                <div className="rounded-lg border border-border-col bg-navy/30 p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp size={14} className={prediction.insights.trend === 'INCREASING' ? 'text-warning' : 'text-emerald'} />
+                    <span className="text-[10px] font-semibold text-text-muted uppercase">Trend</span>
+                  </div>
+                  <p className={`text-xs font-bold font-mono ${prediction.insights.trend === 'INCREASING' ? 'text-warning' : 'text-emerald'}`}>
+                    {prediction.insights.trend}
+                  </p>
+                  <p className="text-[9px] text-text-secondary mt-0.5">Week ahead</p>
+                </div>
+              </div>
+
+              {/* Daily Predictions */}
+              <div className="rounded-lg border border-border-col bg-navy/20 p-4">
+                <h3 className="text-xs font-bold text-text-primary mb-3 flex items-center gap-2">
+                  <BarChart3 size={14} className="text-info" />
+                  <span>7-Day Forecast (ARIMA Model)</span>
+                </h3>
+                <div className="space-y-2">
+                  {prediction.predictions.map((pred, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-text-secondary">{pred.date}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-text-muted text-[10px]">
+                          {pred.lowerBound}-{pred.upperBound}
+                        </span>
+                        <span className="font-bold text-text-primary">{pred.predictedPatients} patients</span>
+                        {idx === prediction.insights.peakDay && (
+                          <span className="rounded-full bg-warning/10 border border-warning/30 px-2 py-0.5 text-[8px] font-bold text-warning">
+                            PEAK
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div className="rounded-lg bg-emerald/5 border border-emerald/20 p-3">
+                <p className="text-xs font-bold text-emerald mb-2 flex items-center gap-1">
+                  <CheckCircle size={12} />
+                  <span>AI Recommendations</span>
+                </p>
+                <ul className="space-y-1 text-[10px] text-text-secondary">
+                  {prediction.recommendations.map((rec, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-emerald mt-0.5">•</span>
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 text-center py-8">
+              <Brain size={32} className="mx-auto text-text-muted mb-2" />
+              <p className="text-xs text-text-muted">Click "Predict Next 7 Days" to run BigQuery ML forecast</p>
+              <p className="text-[10px] text-text-secondary mt-1 font-mono">Uses ARIMA_PLUS time-series model with 95% confidence</p>
+            </div>
+          )}
         </div>
 
       </div>

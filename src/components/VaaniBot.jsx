@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Sparkles, Mic, Volume2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { sendMessage } from '../services/gemini';
+import { startContinuousSpeechRecognition, textToSpeech } from '../services/speech';
+import { translateBotResponse } from '../services/cloudTranslation';
 
 export default function VaaniBot() {
   const { language, setLanguage } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const [chatHistory, setChatHistory] = useState([
     {
       role: 'assistant',
@@ -15,6 +18,7 @@ export default function VaaniBot() {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Auto-scroll to the latest message
   const scrollToBottom = () => {
@@ -43,7 +47,7 @@ export default function VaaniBot() {
   }, [language]);
 
   const handleSend = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!inputText.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: inputText.trim() };
@@ -53,13 +57,59 @@ export default function VaaniBot() {
 
     try {
       const historyToSend = [...chatHistory, userMessage];
-      const botResponse = await sendMessage(historyToSend, language);
-      setChatHistory(prev => [...prev, { role: 'assistant', content: botResponse }]);
+      const rawResponse = await sendMessage(historyToSend, language);
+      
+      // Dynamically translate the raw response if target is Hindi/Tamil
+      const translatedResponse = await translateBotResponse(rawResponse, language);
+      
+      setChatHistory(prev => [...prev, { role: 'assistant', content: translatedResponse }]);
     } catch (error) {
       console.error("Chat error:", error);
       setChatHistory(prev => [...prev, { role: 'assistant', content: 'An error occurred. Please try again.' }]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+    } else {
+      const langCode = language === 'ta' ? 'ta-IN' : language === 'hi' ? 'hi-IN' : 'en-US';
+      const rec = startContinuousSpeechRecognition(
+        langCode,
+        (result) => {
+          if (result.final) {
+            setInputText(prev => prev + result.final);
+          }
+        },
+        () => {
+          setIsListening(false);
+        }
+      );
+
+      if (rec) {
+        recognitionRef.current = rec;
+        setIsListening(true);
+      } else {
+        alert('Voice recognition not supported by browser or permission denied.');
+      }
+    }
+  };
+
+  const handleSpeak = async (text) => {
+    const langCode = language === 'ta' ? 'ta-IN' : language === 'hi' ? 'hi-IN' : 'en-US';
+    try {
+      const audioUrl = await textToSpeech(text, langCode);
+      if (audioUrl && audioUrl !== 'web-speech-api') {
+        const audio = new Audio(audioUrl);
+        audio.play();
+      }
+    } catch (error) {
+      console.error("[TTS Error] Playback failed:", error);
     }
   };
 
@@ -128,6 +178,7 @@ export default function VaaniBot() {
 
             <button
               onClick={() => setIsOpen(false)}
+              aria-label="Close chat"
               className="rounded-lg p-1 text-text-muted hover:bg-white/5 hover:text-text-primary transition-all cursor-pointer"
             >
               <X size={18} />
@@ -140,7 +191,7 @@ export default function VaaniBot() {
           {chatHistory.map((msg, index) => (
             <div
               key={index}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
             >
               <div
                 className={`max-w-[85%] rounded-xl px-4 py-2.5 text-xs font-mono leading-relaxed shadow-sm ${
@@ -151,6 +202,18 @@ export default function VaaniBot() {
               >
                 <div className="whitespace-pre-line">{msg.content}</div>
               </div>
+              
+              {/* Playback Voice controls for Assistant Responses */}
+              {msg.role === 'assistant' && (
+                <button
+                  onClick={() => handleSpeak(msg.content)}
+                  className="mt-1 text-[10px] text-text-muted hover:text-emerald flex items-center gap-1 transition-all cursor-pointer"
+                  title="Speak Response"
+                >
+                  <Volume2 size={12} />
+                  <span>Read aloud</span>
+                </button>
+              )}
             </div>
           ))}
 
@@ -172,6 +235,21 @@ export default function VaaniBot() {
         {/* Input Panel */}
         <form onSubmit={handleSend} className="border-t border-border-col p-4 bg-navy/30">
           <div className="flex gap-2">
+            {/* Voice Input Mic Button */}
+            <button
+              type="button"
+              onClick={toggleListening}
+              aria-label="Toggle voice input"
+              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                isListening 
+                  ? 'bg-danger border-danger text-white animate-pulse' 
+                  : 'bg-navy border-border-col text-text-secondary hover:text-text-primary'
+              }`}
+              title={isListening ? 'Stop listening' : 'Start voice input'}
+            >
+              <Mic size={14} className={isListening ? 'animate-bounce' : ''} />
+            </button>
+
             <input
               type="text"
               value={inputText}
@@ -185,6 +263,7 @@ export default function VaaniBot() {
             />
             <button
               type="submit"
+              aria-label="Send message"
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald text-navy hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
               disabled={isLoading || !inputText.trim()}
             >

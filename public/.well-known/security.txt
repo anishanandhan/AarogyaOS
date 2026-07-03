@@ -1,0 +1,5 @@
+Contact: mailto:security@aarogyaos.com
+Expires: 2027-07-03T00:00:00.000Z
+Preferred-Languages: en
+Policy: https://github.com/anishanandhan/AarogyaOS/blob/main/SECURITY.md
+Canonical: https://aarogyaos.web.app/.well-known/security.txt

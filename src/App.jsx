@@ -16,6 +16,8 @@ import AttendancePage from './pages/AttendancePage';
 import AshaPage from './pages/AshaPage';
 import LabsPage from './pages/LabsPage';
 import AgentsPage from './pages/AgentsPage';
+import CommunityImpactPage from './pages/CommunityImpactPage';
+import PublicHealthMapPage from './pages/PublicHealthMapPage';
 
 // Protected Route Guard
 function ProtectedRoute({ children }) {
@@ -39,8 +41,18 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Login Route */}
+        {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
+        <Route path="/public/map" element={<PublicHealthMapPage />} />
+        <Route path="/map" element={
+          <ProtectedRoute>
+            <AshaRoleGuard path="/map">
+              <Layout>
+                <PublicHealthMapPage />
+              </Layout>
+            </AshaRoleGuard>
+          </ProtectedRoute>
+        } />
 
         {/* Protected Dashboard and Panel Routes wrapped in main Layout */}
         <Route path="/dashboard" element={
@@ -134,6 +146,16 @@ export default function App() {
             <AshaRoleGuard path="/agents">
               <Layout>
                 <AgentsPage />
+              </Layout>
+            </AshaRoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/impact" element={
+          <ProtectedRoute>
+            <AshaRoleGuard path="/impact">
+              <Layout>
+                <CommunityImpactPage />
               </Layout>
             </AshaRoleGuard>
           </ProtectedRoute>

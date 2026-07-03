@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Security and local outputs
+.env
+.env.*
+!*.env.example
+coverage/
+.lighthouseci/
+playwright-report/
+test-results/
+google-cloud-sdk/

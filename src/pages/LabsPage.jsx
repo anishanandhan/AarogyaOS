@@ -1,9 +1,10 @@
 import { useApp } from '../context/AppContext';
+import { getTranslation } from '../i18n/translations';
 import { labTests } from '../data/mockData';
 import { Beaker, Check, X, Calendar, AlertTriangle } from 'lucide-react';
 
 export default function LabsPage() {
-  const { labs, centres } = useApp();
+  const { labs, centres, language } = useApp();
 
   // Helper to compute number of available tests for a centre
   const getAvailableCount = (centreId) => {
@@ -39,10 +40,10 @@ export default function LabsPage() {
         <div className="border-b border-border-col/40 pb-3">
           <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
             <Beaker size={14} className="text-emerald" />
-            <span>District Diagnostic availability Matrix</span>
+            <span>{getTranslation('districtDiagnosticAvailabilityMatrix', language)}</span>
           </h2>
           <p className="text-[10px] text-text-muted mt-1 font-mono">
-            Cross-grid audit mapping 10 primary care tests across all Vellore facilities
+            {getTranslation('crossGridAuditMapping', language)}
           </p>
         </div>
 
@@ -50,13 +51,13 @@ export default function LabsPage() {
           <table className="w-full text-left text-xs font-mono border-collapse">
             <thead>
               <tr className="bg-navy/80 text-text-secondary uppercase text-[9px] border-b border-border-col/50">
-                <th className="p-3 text-left min-w-[150px]">Centre</th>
+                <th className="p-3 text-left min-w-[150px]">{getTranslation('centre', language)}</th>
                 {labTests.map(t => (
                   <th key={t} className="p-3 text-center text-[8px] max-w-[65px] font-sans truncate" title={t}>
                     {t.split(' ')[0]}
                   </th>
                 ))}
-                <th className="p-3 text-right">Available</th>
+                <th className="p-3 text-right">{getTranslation('available', language)}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-col/40">
@@ -92,7 +93,7 @@ export default function LabsPage() {
 
               {/* DISTRICT TOTALS ROW */}
               <tr className="bg-navy/50 font-bold border-t border-border-col">
-                <td className="p-3 text-text-secondary uppercase text-[9px]">District Totals</td>
+                <td className="p-3 text-text-secondary uppercase text-[9px]">{getTranslation('districtTotals', language)}</td>
                 {labTests.map(t => {
                   const tot = getTestDistrictTotal(t);
                   return (
@@ -113,7 +114,7 @@ export default function LabsPage() {
       {/* SECTION 2: CENTRE CARDS & OVERDUE AUDITS */}
       <div className="space-y-3 animate-card" style={{ animationDelay: '50ms' }}>
         <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest">
-          Lab Audit registry & Overdue flags
+          {getTranslation('labAuditRegistryOverdueFlags', language)}
         </h2>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -142,23 +143,23 @@ export default function LabsPage() {
                   </div>
 
                   <p className="mt-2 text-[10px] text-text-secondary font-mono">
-                    Tests status: {count === 10 ? 'Fully equipped' : `${10 - count} test kits missing.`}
+                    {getTranslation('testsStatus', language)}: {count === 10 ? getTranslation('fullyEquipped', language) : `${10 - count} ${getTranslation('testKitsMissing', language)}`}
                   </p>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-border-col/20 flex items-center justify-between text-[9px] font-mono">
                   <span className="text-text-muted flex items-center gap-1">
                     <Calendar size={10} />
-                    <span>Audited {days}d ago</span>
+                    <span>{getTranslation('audited', language)} {days}{getTranslation('dAgo', language)}</span>
                   </span>
 
                   {overdue ? (
                     <span className="rounded bg-danger/10 border border-danger/35 text-danger px-1.5 py-0.5 text-[8px] font-bold animate-pulse flex items-center gap-0.5">
                       <AlertTriangle size={8} />
-                      <span>OVERDUE</span>
+                      <span>{getTranslation('overdue', language)}</span>
                     </span>
                   ) : (
-                    <span className="text-emerald font-bold">NOMINAL</span>
+                    <span className="text-emerald font-bold">{getTranslation('nominal', language)}</span>
                   )}
                 </div>
               </div>

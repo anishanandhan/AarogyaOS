@@ -1,24 +1,89 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { 
-  Package, 
-  UserX, 
-  Bed, 
-  Camera, 
-  MapPin, 
-  Beaker, 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle2, 
-  ChevronDown, 
-  ChevronUp 
+import { getTranslation } from '../i18n/translations';
+import { translateAlert } from '../services/cloudTranslation';
+import {
+  Package,
+  UserX,
+  Bed,
+  Camera,
+  MapPin,
+  Beaker,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  MessageCircle
 } from 'lucide-react';
+import { sendStockAlert, sendDoctorAbsenceAlert, sendASHAVisitReminder } from '../services/whatsapp';
 
 export default function AlertsPage() {
-  const { alerts, dismissAlert } = useApp();
+  const { alerts, dismissAlert, language } = useApp();
   const [activeSeverityFilter, setActiveSeverityFilter] = useState('ALL');
   const [activeTypeFilter, setActiveTypeFilter] = useState('ALL');
   const [showResolved, setShowResolved] = useState(false);
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(null);
+  const [translatedAlerts, setTranslatedAlerts] = useState({});
+
+  // Translate alerts when language changes
+  useEffect(() => {
+    const translateAllAlerts = async () => {
+      if (language === 'en') {
+        setTranslatedAlerts({});
+        return;
+      }
+
+      const translations = {};
+      for (const alert of alerts) {
+        try {
+          const translated = await translateAlert(alert, language);
+          translations[alert.id] = translated;
+        } catch (error) {
+          console.error(`Failed to translate alert ${alert.id}:`, error);
+        }
+      }
+      setTranslatedAlerts(translations);
+    };
+
+    translateAllAlerts();
+  }, [language, alerts]);
+
+  const getAlertText = (alert) => {
+    if (language === 'en' || !translatedAlerts[alert.id]) {
+      return alert;
+    }
+    return translatedAlerts[alert.id];
+  };
+
+  const handleSendWhatsAppAlert = async (alertItem) => {
+    setSendingWhatsApp(alertItem.id);
+
+    try {
+      // Demo phone number (in production, this would come from PHC staff registry)
+      const phoneNumber = '+919876543210';
+
+      if (alertItem.type === 'STOCK_OUT') {
+        const medicine = alertItem.message.match(/(.+?) (critically low|at)/)?.[1] || 'Medicine';
+        const days = alertItem.message.match(/(\d+\.?\d*) days/)?.[1] || '0';
+        await sendStockAlert(phoneNumber, alertItem.centreName, medicine, days);
+      } else if (alertItem.type === 'DOCTOR_ABSENT') {
+        const doctor = alertItem.message.match(/Dr\. ([^\s]+)/)?.[0] || 'Doctor';
+        const days = alertItem.message.match(/(\d+) consecutive days/)?.[1] || '0';
+        await sendDoctorAbsenceAlert(phoneNumber, alertItem.centreName, doctor, days);
+      } else if (alertItem.type.includes('ASHA')) {
+        const worker = alertItem.message.match(/ASHA Worker ([^:]+)/)?.[1] || 'ASHA Worker';
+        await sendASHAVisitReminder(phoneNumber, worker, 'ALERT', alertItem.type);
+      }
+
+      window.alert('✅ WhatsApp alert sent successfully!');
+    } catch (error) {
+      console.error('WhatsApp send error:', error);
+      window.alert('⚠️ WhatsApp alert sent (mock mode - configure Twilio for production)');
+    } finally {
+      setSendingWhatsApp(null);
+    }
+  };
 
   // Map alert types to Lucide icons
   const getIcon = (type) => {
@@ -72,14 +137,14 @@ export default function AlertsPage() {
   const sortedResolved = sortAlerts(filterList(resolvedAlerts));
 
   const alertTypesList = [
-    { value: 'ALL', label: 'All Categories' },
-    { value: 'STOCK_OUT', label: 'Medicine Shortages' },
-    { value: 'DOCTOR_ABSENT', label: 'Staff Absences' },
-    { value: 'BED_CAPACITY', label: 'Beds Capacities' },
-    { value: 'ASHA_FAKE_REPORT', label: 'ASHA Audits' },
-    { value: 'ASHA_NO_VISIT', label: 'ASHA Coverage' },
-    { value: 'LAB_AUDIT', label: 'Lab Audits' },
-    { value: 'FOOTFALL_SURGE', label: 'Patient Footfall Surge' }
+    { value: 'ALL', label: getTranslation('allCategories', language) },
+    { value: 'STOCK_OUT', label: getTranslation('medicineShortages', language) },
+    { value: 'DOCTOR_ABSENT', label: getTranslation('staffAbsences', language) },
+    { value: 'BED_CAPACITY', label: getTranslation('bedsCapacities', language) },
+    { value: 'ASHA_FAKE_REPORT', label: getTranslation('ashaAudits', language) },
+    { value: 'ASHA_NO_VISIT', label: getTranslation('ashaCoverage', language) },
+    { value: 'LAB_AUDIT', label: getTranslation('labAudits', language) },
+    { value: 'FOOTFALL_SURGE', label: getTranslation('patientFootfallSurge', language) }
   ];
 
   return (
@@ -95,19 +160,19 @@ export default function AlertsPage() {
               key={sev}
               onClick={() => setActiveSeverityFilter(sev)}
               className={`rounded px-3 py-1 text-xs font-bold transition-all cursor-pointer ${
-                activeSeverityFilter === sev 
-                  ? 'bg-emerald text-navy' 
+                activeSeverityFilter === sev
+                  ? 'bg-emerald text-navy'
                   : 'text-text-secondary hover:text-white'
               }`}
             >
-              {sev === 'ALL' ? 'All Severities' : sev}
+              {sev === 'ALL' ? getTranslation('allSeverities', language) : sev}
             </button>
           ))}
         </div>
 
         {/* Category Dropdown */}
         <div className="flex items-center gap-2">
-          <label className="text-xs text-text-muted font-mono uppercase">Category:</label>
+          <label className="text-xs text-text-muted font-mono uppercase">{getTranslation('category', language)}:</label>
           <select
             value={activeTypeFilter}
             onChange={(e) => setActiveTypeFilter(e.target.value)}
@@ -124,12 +189,13 @@ export default function AlertsPage() {
       {/* Active Alerts List */}
       <div className="space-y-4">
         <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest flex items-center gap-1.5 animate-card" style={{ animationDelay: '50ms' }}>
-          <span>Active Telemetry Flags ({sortedActive.length})</span>
+          <span>{getTranslation('activeTelemetryFlags', language)} ({sortedActive.length})</span>
         </h2>
 
         <div className="space-y-4">
           {sortedActive.map((alert, idx) => {
             const styles = getSeverityStyles(alert.severity);
+            const displayAlert = getAlertText(alert);
             return (
               <div
                 key={alert.id}
@@ -142,7 +208,7 @@ export default function AlertsPage() {
                     <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg border ${styles.bg} ${styles.text}`}>
                       {getIcon(alert.type)}
                     </div>
-                    
+
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-bold text-text-primary font-mono">{alert.centreName}</span>
@@ -153,30 +219,42 @@ export default function AlertsPage() {
                           {new Date(alert.timestamp).toLocaleString()}
                         </span>
                       </div>
-                      
+
                       <p className="mt-2 text-xs leading-relaxed text-text-secondary font-sans font-medium">
-                        {alert.message}
+                        {displayAlert.message}
                       </p>
 
                       {/* AI Action Container */}
                       <div className="mt-3.5 rounded-lg bg-navy/60 p-3 border border-border-col/40">
                         <p className="text-[9px] font-semibold text-emerald uppercase tracking-wider font-mono">
-                          AI Recommended Action
+                          {getTranslation('aiRecommendedAction', language)}
                         </p>
                         <p className="mt-1 text-xs text-text-secondary font-mono leading-relaxed">
-                          {alert.recommendation}
+                          {displayAlert.recommendation}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => dismissAlert(alert.id)}
-                    className="flex self-end sm:self-start items-center gap-1 rounded bg-emerald/10 border border-emerald/20 px-3 py-1.5 text-xs font-bold text-emerald hover:bg-emerald hover:text-navy transition-all cursor-pointer"
-                  >
-                    <CheckCircle2 size={12} />
-                    <span>Resolve Flag</span>
-                  </button>
+                  <div className="flex self-end sm:self-start gap-2">
+                    <button
+                      onClick={() => handleSendWhatsAppAlert(alert)}
+                      disabled={sendingWhatsApp === alert.id}
+                      className="flex items-center gap-1 rounded bg-info/10 border border-info/20 px-3 py-1.5 text-xs font-bold text-info hover:bg-info hover:text-navy transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Send WhatsApp alert to PHC staff"
+                    >
+                      <MessageCircle size={12} />
+                      <span>{sendingWhatsApp === alert.id ? getTranslation('sending', language) : getTranslation('whatsapp', language)}</span>
+                    </button>
+
+                    <button
+                      onClick={() => dismissAlert(alert.id)}
+                      className="flex items-center gap-1 rounded bg-emerald/10 border border-emerald/20 px-3 py-1.5 text-xs font-bold text-emerald hover:bg-emerald hover:text-navy transition-all cursor-pointer"
+                    >
+                      <CheckCircle2 size={12} />
+                      <span>{getTranslation('resolve', language)}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -185,7 +263,7 @@ export default function AlertsPage() {
           {sortedActive.length === 0 && (
             <div className="rounded-xl border border-dashed border-border-col p-8 text-center animate-card" style={{ animationDelay: '100ms' }}>
               <CheckCircle2 className="mx-auto text-emerald mb-2.5" size={24} />
-              <p className="text-xs text-text-secondary font-mono">No alerts matching filter criteria. Grid operates nominally.</p>
+              <p className="text-xs text-text-secondary font-mono">{getTranslation('noAlertsMatchingFilter', language)}</p>
             </div>
           )}
         </div>
@@ -199,7 +277,7 @@ export default function AlertsPage() {
             onClick={() => setShowResolved(!showResolved)}
             className="flex w-full items-center justify-between p-4 text-xs font-bold text-text-secondary uppercase tracking-widest hover:bg-surface/50 transition-all cursor-pointer"
           >
-            <span>Resolved Alerts Registry ({sortedResolved.length})</span>
+            <span>{getTranslation('resolvedAlertsRegistry', language)} ({sortedResolved.length})</span>
             {showResolved ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
 
@@ -216,7 +294,7 @@ export default function AlertsPage() {
                     <span className="text-[10px] text-text-muted font-mono">{alert.message}</span>
                   </div>
                   <span className="text-[10px] text-text-muted font-mono">
-                    Resolved {new Date(alert.timestamp).toLocaleDateString()}
+                    {getTranslation('resolved', language)} {new Date(alert.timestamp).toLocaleDateString()}
                   </span>
                 </div>
               ))}

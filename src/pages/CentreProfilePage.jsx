@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { getTranslation } from '../i18n/translations';
 import { medicines, labTests } from '../data/mockData';
 import HealthScoreRing from '../components/HealthScoreRing';
 import { 
@@ -30,17 +31,18 @@ import {
 export default function CentreProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { 
-    centres, 
-    stock, 
-    attendance, 
-    asha, 
-    visits, 
-    labs, 
-    updateStock, 
-    logAttendance, 
+  const {
+    centres,
+    stock,
+    attendance,
+    asha,
+    visits,
+    labs,
+    updateStock,
+    logAttendance,
     updateLabAudit,
-    setCentres 
+    setCentres,
+    language
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('stock');
@@ -60,9 +62,9 @@ export default function CentreProfilePage() {
   if (!centre) {
     return (
       <div className="rounded-xl border border-border-col bg-surface p-8 text-center">
-        <p className="text-sm text-text-secondary font-mono">Health Centre {id} not found in Vellore district registry.</p>
+        <p className="text-sm text-text-secondary font-mono">{getTranslation('healthCentreNotFound', language)} {id}</p>
         <button onClick={() => navigate('/centres')} className="mt-4 rounded bg-emerald px-4 py-2 text-xs font-bold text-navy">
-          Back to list
+          {getTranslation('backToList', language)}
         </button>
       </div>
     );
@@ -98,11 +100,11 @@ export default function CentreProfilePage() {
     const labScore = Math.round((availableTests / 10) * 20);
 
     return [
-      { name: 'Stock Inventory', score: stockScore, icon: Package },
-      { name: 'Bed Logistics', score: bedScore, icon: Bed },
-      { name: 'Doctors Attendance', score: doctorScore, icon: UserSquare2 },
-      { name: 'ASHA Coverage', score: ashaScore, icon: Heart },
-      { name: 'Lab Diagnostics', score: labScore, icon: Beaker }
+      { name: getTranslation('stockInventory', language), score: stockScore, icon: Package },
+      { name: getTranslation('bedLogistics', language), score: bedScore, icon: Bed },
+      { name: getTranslation('doctorsAttendance', language), score: doctorScore, icon: UserSquare2 },
+      { name: getTranslation('ashaCoverage', language), score: ashaScore, icon: Heart },
+      { name: getTranslation('labDiagnostics', language), score: labScore, icon: Beaker }
     ];
   };
 
@@ -110,12 +112,12 @@ export default function CentreProfilePage() {
 
   // Tab configuration
   const tabs = [
-    { id: 'stock', label: 'StockSense', icon: Package },
-    { id: 'footfall', label: 'FlowAI OPD', icon: Activity },
-    { id: 'beds', label: 'Beds Tracker', icon: Bed },
-    { id: 'doctors', label: 'Doctors Attendance', icon: UserSquare2 },
-    { id: 'asha', label: 'ASHA Workers', icon: Heart },
-    { id: 'labs', label: 'Lab Checkups', icon: Beaker }
+    { id: 'stock', label: getTranslation('stockSense', language), icon: Package },
+    { id: 'footfall', label: getTranslation('flowAiOpd', language), icon: Activity },
+    { id: 'beds', label: getTranslation('bedsTracker', language), icon: Bed },
+    { id: 'doctors', label: getTranslation('doctorsAttendance', language), icon: UserSquare2 },
+    { id: 'asha', label: getTranslation('ashaWorkers', language), icon: Heart },
+    { id: 'labs', label: getTranslation('labCheckups', language), icon: Beaker }
   ];
 
   // Plausible Footfall Data generator if missing
@@ -219,12 +221,12 @@ export default function CentreProfilePage() {
               </div>
               
               <p className="text-xs text-text-muted mt-1 font-mono">
-                Block Assignment: {centre.block} Block · Vellore District, Tamil Nadu
+                {getTranslation('blockAssignment', language)}: {centre.block} Block · Vellore District, Tamil Nadu
               </p>
-              
+
               <p className="text-[10px] text-text-secondary mt-2 flex items-center gap-1.5 font-mono">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald" />
-                <span>Last Telemetry Sync: {new Date(centre.lastUpdated).toLocaleString()}</span>
+                <span>{getTranslation('lastTelemetrySync', language)}: {new Date(centre.lastUpdated).toLocaleString()}</span>
               </p>
             </div>
           </div>
@@ -235,19 +237,19 @@ export default function CentreProfilePage() {
               onClick={() => { setActiveTab('stock'); setShowStockModal(true); }}
               className="rounded bg-navy border border-border-col px-3 py-2 text-xs font-bold text-text-secondary hover:bg-white/5 hover:text-white transition-all cursor-pointer"
             >
-              Log Stock Update
+              {getTranslation('logStockUpdate', language)}
             </button>
             <button
               onClick={() => { setActiveTab('doctors'); }}
               className="rounded bg-navy border border-border-col px-3 py-2 text-xs font-bold text-text-secondary hover:bg-white/5 hover:text-white transition-all cursor-pointer"
             >
-              Manage Attendance
+              {getTranslation('manageAttendance', language)}
             </button>
             <button
               onClick={() => { setActiveTab('labs'); setShowLabModal(true); }}
               className="rounded bg-emerald text-navy px-3.5 py-2 text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
-              Update Lab Audit
+              {getTranslation('updateLabAudit', language)}
             </button>
           </div>
         </div>
@@ -255,7 +257,7 @@ export default function CentreProfilePage() {
         {/* 5 pillars score breakdown */}
         <div className="mt-6 border-t border-border-col/40 pt-5">
           <p className="text-[9px] font-semibold text-text-muted uppercase tracking-wider font-mono mb-3">
-            5 Health Pillars Score Breakdown (Dynamic Telemetry Weights)
+            {getTranslation('fiveHealthPillarsScoreBreakdown', language)}
           </p>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
             {subscores.map((pillar, index) => {
@@ -310,14 +312,14 @@ export default function CentreProfilePage() {
           <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-                Medicine Stock & Consumption Registry
+                {getTranslation('medicineStockConsumptionRegistry', language)}
               </h2>
               <button
                 onClick={() => setShowStockModal(true)}
                 className="flex items-center gap-1 rounded bg-emerald/10 border border-emerald/20 px-2.5 py-1.5 text-[10px] font-bold text-emerald hover:bg-emerald hover:text-navy transition-all cursor-pointer"
               >
                 <Plus size={10} />
-                <span>Log Inventory levels</span>
+                <span>{getTranslation('logInventoryLevels', language)}</span>
               </button>
             </div>
 
@@ -325,11 +327,11 @@ export default function CentreProfilePage() {
               <table className="w-full text-left text-xs font-mono">
                 <thead className="bg-navy/80 text-text-secondary uppercase text-[10px]">
                   <tr>
-                    <th className="p-3">Medicine</th>
-                    <th className="p-3">Current Stock</th>
-                    <th className="p-3">Daily Use</th>
-                    <th className="p-3">Days Left</th>
-                    <th className="p-3 text-right">Status</th>
+                    <th className="p-3">{getTranslation('medicine', language)}</th>
+                    <th className="p-3">{getTranslation('currentStock', language)}</th>
+                    <th className="p-3">{getTranslation('dailyUse', language)}</th>
+                    <th className="p-3">{getTranslation('daysLeft', language)}</th>
+                    <th className="p-3 text-right">{getTranslation('status', language)}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-col/40">
@@ -337,23 +339,23 @@ export default function CentreProfilePage() {
                     const medInfo = medicines.find(m => m.id === s.medicineId) || {};
                     const daysRemaining = Math.floor(s.currentStock / s.dailyConsumption);
                     
-                    let statusLabel = 'OK';
+                    let statusLabel = getTranslation('ok', language);
                     let statusClass = 'bg-emerald/15 text-emerald border border-emerald/20';
                     if (daysRemaining < 7) {
                       statusLabel = 'CRITICAL';
                       statusClass = 'bg-danger/20 text-danger border border-danger/30';
                     } else if (daysRemaining < 14) {
-                      statusLabel = 'LOW';
+                      statusLabel = getTranslation('low', language);
                       statusClass = 'bg-warning/20 text-warning border border-warning/30';
                     }
 
                     return (
                       <tr key={s.medicineId} className="hover:bg-white/5 transition-colors">
                         <td className="p-3 font-bold text-text-primary">{medInfo.name} <span className="text-[10px] text-text-muted">({medInfo.unit})</span></td>
-                        <td className="p-3 text-text-secondary">{s.currentStock} units</td>
-                        <td className="p-3 text-text-secondary">{s.dailyConsumption}/day</td>
+                        <td className="p-3 text-text-secondary">{s.currentStock} {getTranslation('units', language)}</td>
+                        <td className="p-3 text-text-secondary">{s.dailyConsumption}/{getTranslation('day', language)}</td>
                         <td className={`p-3 font-bold ${daysRemaining < 7 ? 'text-danger' : daysRemaining < 14 ? 'text-warning' : 'text-emerald'}`}>
-                          {daysRemaining} Days
+                          {daysRemaining} {getTranslation('days', language)}
                         </td>
                         <td className="p-3 text-right">
                           <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${statusClass}`}>
@@ -374,10 +376,10 @@ export default function CentreProfilePage() {
           <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4">
             <div>
               <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-                7-Day OPD Patient Footfall Trend
+                {getTranslation('sevenDayOpdPatientFootfallTrend', language)}
               </h2>
               <p className="text-[10px] text-text-muted mt-1 font-mono">
-                Tracks patient surge risks (trigger thresholds set at +20% of 7-day average)
+                {getTranslation('tracksPatientSurgeRisks', language)}
               </p>
             </div>
 
@@ -398,7 +400,7 @@ export default function CentreProfilePage() {
                     labelStyle={{ color: '#94A3B8', fontFamily: 'monospace', fontSize: '10px' }}
                     itemStyle={{ color: '#F8FAFC', fontFamily: 'monospace', fontSize: '10px' }}
                   />
-                  <Area type="monotone" dataKey="opd" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorOpd)" name="OPD Patient Registrations" />
+                  <Area type="monotone" dataKey="opd" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorOpd)" name={getTranslation('opdPatientRegistrations', language)} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -411,42 +413,42 @@ export default function CentreProfilePage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-                  Bed Occupancy Tracker
+                  {getTranslation('bedOccupancyTracker', language)}
                 </h2>
                 <p className="text-[10px] text-text-muted mt-1 font-mono">
-                  District routing operates on this availability register
+                  {getTranslation('districtRoutingOperate', language)}
                 </p>
               </div>
               <button
                 onClick={() => setShowBedModal(true)}
                 className="rounded bg-navy border border-border-col px-3 py-1.5 text-[10px] font-bold text-text-secondary hover:text-white transition-all cursor-pointer"
               >
-                Log Beds occupancy
+                {getTranslation('logBedsOccupancy', language)}
               </button>
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {/* Total */}
               <div className="rounded-lg bg-navy/40 p-4 border border-border-col/40 text-center font-mono">
-                <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">Total Beds</p>
+                <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">{getTranslation('totalBeds', language)}</p>
                 <p className="mt-1 text-2xl font-bold text-text-primary">{centre.bedsTotal}</p>
               </div>
               {/* Occupied */}
               <div className="rounded-lg bg-navy/40 p-4 border border-border-col/40 text-center font-mono">
-                <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">Occupied Beds</p>
+                <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">{getTranslation('occupiedBeds', language)}</p>
                 <p className="mt-1 text-2xl font-bold text-warning">{centre.bedsOccupied}</p>
               </div>
               {/* Available */}
               <div className="rounded-lg bg-navy/40 p-4 border border-border-col/40 text-center font-mono">
-                <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">Available Beds</p>
+                <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">{getTranslation('availableBeds', language)}</p>
                 <p className="mt-1 text-2xl font-bold text-emerald">{centre.bedsTotal - centre.bedsOccupied}</p>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs font-mono text-text-secondary mb-2">
-                <span>Occupancy Load</span>
-                <span>{Math.round((centre.bedsOccupied / centre.bedsTotal) * 100)}% Capacity</span>
+                <span>{getTranslation('occupancyLoad', language)}</span>
+                <span>{Math.round((centre.bedsOccupied / centre.bedsTotal) * 100)}% {getTranslation('capacity', language)}</span>
               </div>
               <div className="h-4 w-full rounded-md bg-navy overflow-hidden p-0.5 border border-border-col">
                 <div 
@@ -465,18 +467,18 @@ export default function CentreProfilePage() {
         {activeTab === 'doctors' && (
           <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4">
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-              Staff & Doctor Check-in sheet
+              {getTranslation('staffDoctorCheckInSheet', language)}
             </h2>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
                 <thead className="bg-navy/80 text-text-secondary uppercase text-[10px]">
                   <tr>
-                    <th className="p-3">Doctor Name</th>
-                    <th className="p-3">Specialization</th>
-                    <th className="p-3">Consecutive Absences</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3 text-right">Duty Override</th>
+                    <th className="p-3">{getTranslation('doctorName', language)}</th>
+                    <th className="p-3">{getTranslation('specialization', language)}</th>
+                    <th className="p-3">{getTranslation('consecutiveAbsences', language)}</th>
+                    <th className="p-3">{getTranslation('status', language)}</th>
+                    <th className="p-3 text-right">{getTranslation('dutyOverride', language)}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-col/40">
@@ -487,7 +489,7 @@ export default function CentreProfilePage() {
                         <td className="p-3 font-bold text-text-primary">{doc.doctor}</td>
                         <td className="p-3 text-text-secondary">{doc.specialization}</td>
                         <td className={`p-3 font-bold ${isAbsent && doc.consecutiveAbsent >= 3 ? 'text-danger animate-pulse' : 'text-text-muted'}`}>
-                          {doc.consecutiveAbsent} days
+                          {doc.consecutiveAbsent} {getTranslation('days', language)}
                         </td>
                         <td className="p-3">
                           <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${
@@ -501,7 +503,7 @@ export default function CentreProfilePage() {
                             onClick={() => logAttendance(centre.id, doc.doctor, isAbsent ? 'PRESENT' : 'ABSENT')}
                             className="rounded border border-border-col bg-navy px-2 py-1 text-[10px] hover:bg-white/5 hover:text-white transition-all cursor-pointer"
                           >
-                            Set {isAbsent ? 'Present' : 'Absent'}
+                            {getTranslation('set', language)} {isAbsent ? getTranslation('present', language) : getTranslation('absent', language)}
                           </button>
                         </td>
                       </tr>

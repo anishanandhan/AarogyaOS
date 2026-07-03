@@ -1,8 +1,9 @@
 import { useApp } from '../context/AppContext';
+import { getTranslation } from '../i18n/translations';
 import { CalendarDays, AlertCircle, RefreshCw, Stethoscope } from 'lucide-react';
 
 export default function AttendancePage() {
-  const { attendance, logAttendance, centres } = useApp();
+  const { attendance, logAttendance, centres, language } = useApp();
 
   // Sorting: ABSENT doctors first, then by consecutiveAbsent descending, then present
   const sortedRoster = [...attendance].sort((a, b) => {
@@ -20,30 +21,30 @@ export default function AttendancePage() {
   // Suggest replacements from same block or nearby centres
   const getReplacementRecommendation = (absentDoc) => {
     const absentCentre = centres.find(c => c.name === absentDoc.centreName);
-    if (!absentCentre) return 'Check district roster';
+    if (!absentCentre) return getTranslation('checkDistrictRoster', language);
 
     // Find doctors in the same block who are PRESENT today
-    const availableDocs = attendance.filter(a => 
-      a.centreId !== absentDoc.centreId && 
-      a.status === 'PRESENT' && 
+    const availableDocs = attendance.filter(a =>
+      a.centreId !== absentDoc.centreId &&
+      a.status === 'PRESENT' &&
       a.specialization === absentDoc.specialization
     );
 
     if (availableDocs.length > 0) {
-      return `Reassign ${availableDocs[0].doctor} from ${availableDocs[0].centreName} temporarily.`;
+      return `${getTranslation('reassign', language)} ${availableDocs[0].doctor} ${getTranslation('from', language)} ${availableDocs[0].centreName} ${getTranslation('temporarily', language)}.`;
     }
 
     // Secondary search: Any GENERAL MEDICINE doctor present in the block
-    const fallbackDocs = attendance.filter(a => 
-      a.centreId !== absentDoc.centreId && 
+    const fallbackDocs = attendance.filter(a =>
+      a.centreId !== absentDoc.centreId &&
       a.status === 'PRESENT'
     );
 
     if (fallbackDocs.length > 0) {
-      return `Deploy ${fallbackDocs[0].doctor} (${fallbackDocs[0].specialization}) from ${fallbackDocs[0].centreName} as relief.`;
+      return `${getTranslation('deploy', language)} ${fallbackDocs[0].doctor} (${fallbackDocs[0].specialization}) ${getTranslation('from', language)} ${fallbackDocs[0].centreName} ${getTranslation('asRelief', language)}.`;
     }
 
-    return 'No available doctors in nearby blocks. Request district pool mobilization.';
+    return getTranslation('noAvailableDoctors', language);
   };
 
   // Staff-to-patient ratio: doctorsPresent : today's OPD
@@ -78,19 +79,19 @@ export default function AttendancePage() {
         <div className="rounded-xl border border-border-col bg-surface p-5 lg:col-span-7 space-y-4 animate-card" style={{ animationDelay: '0ms' }}>
           <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-border-col/40 pb-3">
             <CalendarDays size={14} className="text-emerald" />
-            <span>District Doctor Check-in sheet</span>
+            <span>{getTranslation('districtDoctorCheckInSheet', language)}</span>
           </h2>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
               <thead className="bg-navy/80 text-text-secondary uppercase text-[10px]">
                 <tr>
-                  <th className="p-3">Doctor</th>
-                  <th className="p-3">Centre</th>
-                  <th className="p-3">Specialization</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Absence Streak</th>
-                  <th className="p-3 text-right">Roster Toggle</th>
+                  <th className="p-3">{getTranslation('doctor', language)}</th>
+                  <th className="p-3">{getTranslation('centre', language)}</th>
+                  <th className="p-3">{getTranslation('specialization', language)}</th>
+                  <th className="p-3">{getTranslation('status', language)}</th>
+                  <th className="p-3">{getTranslation('absenceStreak', language)}</th>
+                  <th className="p-3 text-right">{getTranslation('rosterToggle', language)}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-col/40">
@@ -109,14 +110,14 @@ export default function AttendancePage() {
                         </span>
                       </td>
                       <td className={`p-3 font-bold ${isAbsent && doc.consecutiveAbsent >= 3 ? 'text-danger animate-pulse' : 'text-text-muted'}`}>
-                        {doc.consecutiveAbsent > 0 ? `${doc.consecutiveAbsent} days` : '-'}
+                        {doc.consecutiveAbsent > 0 ? `${doc.consecutiveAbsent} ${getTranslation('days', language)}` : '-'}
                       </td>
                       <td className="p-3 text-right">
                         <button
                           onClick={() => logAttendance(doc.centreId, doc.doctor, isAbsent ? 'PRESENT' : 'ABSENT')}
                           className="rounded border border-border-col bg-navy px-2.5 py-1 text-[10px] hover:bg-white/5 hover:text-white transition-all cursor-pointer"
                         >
-                          Mark {isAbsent ? 'Present' : 'Absent'}
+                          {getTranslation('mark', language)} {isAbsent ? getTranslation('present', language) : getTranslation('absent', language)}
                         </button>
                       </td>
                     </tr>
@@ -134,7 +135,7 @@ export default function AttendancePage() {
           <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4 animate-card" style={{ animationDelay: '100ms' }}>
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-border-col/40 pb-3">
               <AlertCircle size={14} className="text-danger animate-pulse" />
-              <span>Absence Escalations</span>
+              <span>{getTranslation('absenceEscalations', language)}</span>
             </h2>
 
             <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1">
@@ -144,7 +145,7 @@ export default function AttendancePage() {
                   className="rounded-lg border border-danger/35 bg-danger/5 p-3.5 space-y-2 text-xs font-mono"
                 >
                   <div className="flex items-center justify-between text-danger font-bold">
-                    <span>STREAK: {doc.consecutiveAbsent} DAYS</span>
+                    <span>{getTranslation('streak', language)}: {doc.consecutiveAbsent} {getTranslation('days', language)}</span>
                     <AlertCircle size={12} />
                   </div>
                   
@@ -155,7 +156,7 @@ export default function AttendancePage() {
 
                   <div className="border-t border-border-col/40 pt-2.5 mt-2 space-y-1">
                     <span className="text-[8px] font-semibold text-warning uppercase font-sans">
-                      AI Replacement Recommendation
+                      {getTranslation('aiReplacementRecommendation', language)}
                     </span>
                     <p className="text-[10px] text-text-secondary leading-relaxed font-sans font-medium">
                       {getReplacementRecommendation(doc)}
@@ -165,7 +166,7 @@ export default function AttendancePage() {
               ))}
 
               {absentEscalations.length === 0 && (
-                <p className="text-center text-xs text-text-muted font-mono py-4">No critical doctor absences detected. Roster stable.</p>
+                <p className="text-center text-xs text-text-muted font-mono py-4">{getTranslation('noCriticalDoctorAbsences', language)}</p>
               )}
             </div>
           </div>
@@ -174,7 +175,7 @@ export default function AttendancePage() {
           <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4 animate-card" style={{ animationDelay: '150ms' }}>
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-border-col/40 pb-3">
               <Stethoscope size={14} className="text-emerald" />
-              <span>Staffing-to-Patient Load</span>
+              <span>{getTranslation('staffingToPatientLoad', language)}</span>
             </h2>
 
             <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
@@ -187,7 +188,7 @@ export default function AttendancePage() {
                       <p className="text-[9px] text-text-muted mt-0.5">{ratio.ratioText}</p>
                     </div>
                     <span className={`text-[10px] font-bold ${ratio.severityClass}`}>
-                      {ratio.loadText}
+                      {ratio.loadText === 'CRITICAL (No Doctor)' ? getTranslation('criticalNoDoctor', language) : ratio.loadText === 'High load' ? getTranslation('highLoad', language) : getTranslation('optimalLoad', language)}
                     </span>
                   </div>
                 );

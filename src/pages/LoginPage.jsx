@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { getTranslation } from '../i18n/translations';
 import { Activity, Shield, ClipboardList, Heart } from 'lucide-react';
 
 export default function LoginPage() {
-  const { setUserRole } = useApp();
+  const { setUserRole, language } = useApp();
   const navigate = useNavigate();
 
   const handleRoleSelect = (role) => {
@@ -14,22 +15,22 @@ export default function LoginPage() {
   const roles = [
     {
       id: 'District Admin',
-      title: 'District Admin',
-      description: 'District Health Officer view. System telemetry, supply chain overrides, and multi-agent reports.',
+      titleKey: 'districtAdmin',
+      descriptionKey: 'districtAdminDescription',
       icon: Shield,
       color: 'text-info bg-info/10 border-info/20'
     },
     {
       id: 'PHC Staff',
-      title: 'PHC / CHC Staff',
-      description: 'Log inventory levels, report doctor attendance, update diagnostics availability checklist.',
+      titleKey: 'phcStaff',
+      descriptionKey: 'phcStaffDescription',
       icon: ClipboardList,
       color: 'text-emerald bg-emerald/10 border-emerald/20'
     },
     {
       id: 'ASHA Worker',
-      title: 'ASHA Field Worker',
-      description: 'ASHA & ANM visit logger. Simplified mobile visit reports with photo proof uploads.',
+      titleKey: 'ashaWorker',
+      descriptionKey: 'ashaWorkerDescription',
       icon: Heart,
       color: 'text-danger bg-danger/10 border-danger/20'
     }
@@ -44,10 +45,10 @@ export default function LoginPage() {
           <Activity size={32} />
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-          Smart Health
+          AarogyaOS
         </h1>
         <p className="mt-2 text-sm text-text-secondary max-w-sm mx-auto">
-          AI-Driven Health Centre & Supply Chain Decision Intelligence Platform
+          {getTranslation('theOperatingSystemForRuralHealth', language)}
         </p>
       </div>
 
@@ -55,7 +56,7 @@ export default function LoginPage() {
       <div className="w-full max-w-4xl animate-card" style={{ animationDelay: '100ms' }}>
         <div className="text-center mb-6">
           <h2 className="text-xs font-semibold text-text-muted uppercase tracking-widest">
-            Select Your Role to Access Portal
+            {getTranslation('selectYourRoleToAccessPortal', language)}
           </h2>
         </div>
 
@@ -74,15 +75,15 @@ export default function LoginPage() {
                 </div>
                 
                 <h3 className="text-base font-bold text-text-primary transition-all duration-300 group-hover:text-emerald">
-                  {r.title}
+                  {getTranslation(r.titleKey, language)}
                 </h3>
-                
+
                 <p className="mt-3 text-xs text-text-muted leading-relaxed">
-                  {r.description}
+                  {getTranslation(r.descriptionKey, language)}
                 </p>
-                
+
                 <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-emerald opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <span>Enter Dashboard</span>
+                  <span>{getTranslation('enterDashboard', language)}</span>
                   <span>&rarr;</span>
                 </div>
               </button>
@@ -93,8 +94,8 @@ export default function LoginPage() {
 
       {/* Footnote */}
       <div className="mt-12 text-center text-[10px] text-text-muted font-mono animate-card" style={{ animationDelay: '200ms' }}>
-        <p>Vellore District Administration · Google Cloud Build with AI Hackathon 2026</p>
-        <p className="mt-1 opacity-70">Requires no credentials for evaluation purposes.</p>
+        <p>{getTranslation('velloreDistrictAdmin', language)}</p>
+        <p className="mt-1 opacity-70">{getTranslation('noCredentialsRequired', language)}</p>
       </div>
 
     </div>

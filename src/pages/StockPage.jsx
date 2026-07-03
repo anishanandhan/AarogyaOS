@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { getTranslation } from '../i18n/translations';
 import { medicines, redistributionSuggestions } from '../data/mockData';
 import { 
   BarChart, 
@@ -15,7 +16,7 @@ import {
 import { Package, ArrowRightLeft, ArrowRight, Filter } from 'lucide-react';
 
 export default function StockPage() {
-  const { stock, centres } = useApp();
+  const { stock, centres, language } = useApp();
   const navigate = useNavigate();
   const [centreFilter, setCentreFilter] = useState('ALL');
 
@@ -81,7 +82,7 @@ export default function StockPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border-col/40 pb-3">
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
               <Package size={14} className="text-emerald" />
-              <span>District Medicine Inventory Log</span>
+              <span>{getTranslation('districtMedicineInventoryLog', language)}</span>
             </h2>
 
             {/* Centre Filter dropdown */}
@@ -92,7 +93,7 @@ export default function StockPage() {
                 onChange={(e) => setCentreFilter(e.target.value)}
                 className="rounded border border-border-col bg-navy px-2.5 py-1.5 text-xs text-text-secondary outline-none focus:border-emerald font-mono cursor-pointer"
               >
-                <option value="ALL">All Vellore Centres</option>
+                <option value="ALL">{getTranslation('allVellorecentres', language)}</option>
                 {centres.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -104,24 +105,24 @@ export default function StockPage() {
             <table className="w-full text-left text-xs font-mono">
               <thead className="bg-navy/80 text-text-secondary uppercase text-[10px] sticky top-0 z-10">
                 <tr>
-                  <th className="p-3">Centre</th>
-                  <th className="p-3">Medicine</th>
-                  <th className="p-3">Stock level</th>
-                  <th className="p-3">Days Left</th>
-                  <th className="p-3">30-day Forecast</th>
-                  <th className="p-3 text-right">Status</th>
+                  <th className="p-3">{getTranslation('centre', language)}</th>
+                  <th className="p-3">{getTranslation('medicine', language)}</th>
+                  <th className="p-3">{getTranslation('stockLevel', language)}</th>
+                  <th className="p-3">{getTranslation('daysLeft', language)}</th>
+                  <th className="p-3">{getTranslation('thirtyDayForecast', language)}</th>
+                  <th className="p-3 text-right">{getTranslation('status', language)}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-col/40">
                 {tableRows.map((row, idx) => {
                   let badgeClass = 'bg-emerald/15 text-emerald border border-emerald/20';
-                  let status = 'OK';
+                  let status = getTranslation('ok', language);
                   if (row.daysRemaining < 7) {
                     badgeClass = 'bg-danger/15 text-danger border border-danger/25 animate-pulse';
                     status = 'CRITICAL';
                   } else if (row.daysRemaining < 14) {
                     badgeClass = 'bg-warning/15 text-warning border border-warning/25';
-                    status = 'LOW';
+                    status = getTranslation('low', language);
                   }
 
                   return (
@@ -134,9 +135,9 @@ export default function StockPage() {
                       <td className="p-3 font-bold text-text-primary">{row.medicineName}</td>
                       <td className="p-3 text-text-muted">{row.currentStock} {row.unit}</td>
                       <td className={`p-3 font-bold ${row.daysRemaining < 7 ? 'text-danger' : row.daysRemaining < 14 ? 'text-warning' : 'text-emerald'}`}>
-                        {row.daysRemaining} days
+                        {row.daysRemaining} {getTranslation('days', language)}
                       </td>
-                      <td className="p-3 text-text-muted">{row.forecast30Days} units</td>
+                      <td className="p-3 text-text-muted">{row.forecast30Days} {getTranslation('units', language)}</td>
                       <td className="p-3 text-right">
                         <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${badgeClass}`}>
                           {status}
@@ -154,7 +155,7 @@ export default function StockPage() {
         <div className="rounded-xl border border-border-col bg-surface p-5 lg:col-span-3 space-y-4 animate-card" style={{ animationDelay: '100ms' }}>
           <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-border-col/40 pb-3">
             <ArrowRightLeft size={14} className="text-emerald" />
-            <span>Redistribution Roster</span>
+            <span>{getTranslation('redistributionRoster', language)}</span>
           </h2>
 
           <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
@@ -169,7 +170,7 @@ export default function StockPage() {
                   }`}>
                     {s.urgency}
                   </span>
-                  <span className="text-[9px] text-text-muted">ID: TRANSFER-0{index+1}</span>
+                  <span className="text-[9px] text-text-muted">{getTranslation('idTransfer', language)}{index+1}</span>
                 </div>
                 
                 <div className="flex items-center justify-between font-semibold">
@@ -180,7 +181,7 @@ export default function StockPage() {
 
                 <div className="border-t border-border-col/35 pt-2 flex items-center justify-between mt-2">
                   <div>
-                    <span className="text-[9px] text-text-muted font-sans">Medicine</span>
+                    <span className="text-[9px] text-text-muted font-sans">{getTranslation('medicine', language)}</span>
                     <p className="font-bold text-emerald">{s.medicine}</p>
                   </div>
                   <span className="rounded bg-navy border border-border-col px-2 py-0.5 font-bold text-text-primary">
@@ -197,7 +198,7 @@ export default function StockPage() {
       {/* District-wide Stock Bar Chart */}
       <div className="rounded-xl border border-border-col bg-surface p-5 animate-card" style={{ animationDelay: '150ms' }}>
         <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-4">
-          Total District stock levels per Medicine
+          {getTranslation('totalDistrictStockLevelsPerMedicine', language)}
         </h2>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">

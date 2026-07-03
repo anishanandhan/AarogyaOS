@@ -1,0 +1,33 @@
+# Ignore version control
+.git
+.gitignore
+
+# Ignore local development files
+.env
+.env.local
+.env.*.local
+
+# Ignore node_modules (Cloud Build will run npm install)
+node_modules/
+
+# Ignore Google Cloud SDK (very large, not needed in container)
+google-cloud-sdk/
+
+# Ignore local build output (multi-stage Dockerfile rebuilds this)
+dist/
+
+# Ignore macOS files
+.DS_Store
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore test files
+*.test.js
+*.spec.js
+
+# Ignore mock/temp files
+mock_visit.png

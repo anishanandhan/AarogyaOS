@@ -16,7 +16,9 @@ export function AppProvider({ children }) {
   const [userRole, setUserRole] = useState(() => {
     return localStorage.getItem('smart_health_role') || null;
   });
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem('smart_health_language') || 'en';
+  });
   const [alerts, setAlerts] = useState(initialAlerts);
   const [centres, setCentres] = useState(initialCentres);
   const [stock, setStock] = useState(initialStockData);
@@ -33,6 +35,11 @@ export function AppProvider({ children }) {
       localStorage.removeItem('smart_health_role');
     }
   }, [userRole]);
+
+  // Sync language preference to localStorage
+  useEffect(() => {
+    localStorage.setItem('smart_health_language', language);
+  }, [language]);
 
   // Recalculate health scores for each centre dynamically based on current state
   // 5 pillars of 20 points each:

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { getTranslation } from '../i18n/translations';
 import HealthScoreRing from '../components/HealthScoreRing';
 import { Search, Stethoscope, Bed, Calendar, ArrowRight, Filter } from 'lucide-react';
 
 export default function CentresPage() {
-  const { centres } = useApp();
+  const { centres, language } = useApp();
   const navigate = useNavigate();
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,7 +46,7 @@ export default function CentresPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search centres by name or block..."
+            placeholder={getTranslation('searchCentresByNameOrBlock', language)}
             className="w-full rounded-lg border border-border-col bg-navy pl-9 pr-4 py-2 text-xs text-text-primary placeholder:text-text-muted outline-none focus:border-emerald transition-all"
           />
         </div>
@@ -60,7 +61,7 @@ export default function CentresPage() {
               onChange={(e) => setFacilityFilter(e.target.value)}
               className="rounded border border-border-col bg-navy px-3 py-1.5 text-xs text-text-secondary outline-none focus:border-emerald font-mono cursor-pointer"
             >
-              <option value="ALL">All Types</option>
+              <option value="ALL">{getTranslation('allTypes', language)}</option>
               <option value="PHC">PHC</option>
               <option value="CHC">CHC</option>
             </select>
@@ -73,10 +74,10 @@ export default function CentresPage() {
               onChange={(e) => setScoreFilter(e.target.value)}
               className="rounded border border-border-col bg-navy px-3 py-1.5 text-xs text-text-secondary outline-none focus:border-emerald font-mono cursor-pointer"
             >
-              <option value="ALL">All Scores</option>
-              <option value="CRITICAL">Critical (&lt;40)</option>
-              <option value="LOW">Warning (40-70)</option>
-              <option value="OK">Nominal (&gt;70)</option>
+              <option value="ALL">{getTranslation('allScores', language)}</option>
+              <option value="CRITICAL">{getTranslation('critical', language)} (&lt;40)</option>
+              <option value="LOW">{getTranslation('warning', language)} (40-70)</option>
+              <option value="OK">{getTranslation('nominal', language)} (&gt;70)</option>
             </select>
           </div>
         </div>
@@ -107,7 +108,7 @@ export default function CentresPage() {
                         {c.type}
                       </span>
                       <span className="text-[10px] text-text-secondary font-mono">
-                        Block: {c.block}
+                        {getTranslation('block', language)}: {c.block}
                       </span>
                     </div>
                   </div>
@@ -121,7 +122,7 @@ export default function CentresPage() {
                     <div className="flex justify-between text-[10px] font-mono text-text-secondary">
                       <span className="flex items-center gap-1">
                         <Bed size={10} className="text-text-muted" />
-                        <span>Bed occupancy</span>
+                        <span>{getTranslation('bedOccupancy', language)}</span>
                       </span>
                       <span>{c.bedsOccupied}/{c.bedsTotal} ({bedPercent}%)</span>
                     </div>
@@ -140,10 +141,10 @@ export default function CentresPage() {
                   <div className="flex items-center justify-between text-[10px] font-mono">
                     <span className="text-text-secondary flex items-center gap-1">
                       <Stethoscope size={10} className="text-text-muted" />
-                      <span>Doctors availability</span>
+                      <span>{getTranslation('doctorsAvailability', language)}</span>
                     </span>
                     <span className={`font-bold ${c.doctorsPresent === 0 ? 'text-danger font-bold animate-pulse' : 'text-text-primary'}`}>
-                      {c.doctorsPresent} / {c.doctorsOnRoll} present
+                      {c.doctorsPresent} / {c.doctorsOnRoll} {getTranslation('present', language)}
                     </span>
                   </div>
                 </div>
@@ -153,9 +154,9 @@ export default function CentresPage() {
               <div className="mt-6 flex items-center justify-between border-t border-border-col/10 pt-3 text-[9px] text-text-muted font-mono">
                 <span className="flex items-center gap-1">
                   <Calendar size={10} />
-                  <span>Update: {new Date(c.lastUpdated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  <span>{getTranslation('update', language)}: {new Date(c.lastUpdated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                 </span>
-                
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -163,7 +164,7 @@ export default function CentresPage() {
                   }}
                   className="flex items-center gap-0.5 text-xs font-semibold text-emerald hover:underline"
                 >
-                  <span>Profile</span>
+                  <span>{getTranslation('profile', language)}</span>
                   <ArrowRight size={10} />
                 </button>
               </div>
@@ -173,7 +174,7 @@ export default function CentresPage() {
 
         {filteredCentres.length === 0 && (
           <div className="col-span-full rounded-xl border border-dashed border-border-col p-12 text-center">
-            <p className="text-sm text-text-secondary font-mono">No matching health centers found in this query.</p>
+            <p className="text-sm text-text-secondary font-mono">{getTranslation('noMatchingHealthCenters', language)}</p>
           </div>
         )}
       </div>

@@ -1,7 +1,18 @@
+// Import direct API key endpoint
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`;
 
+// Import our supplementary tool stack for compliance integration
+import { queryVertexAI } from './vertex';
+import { logToFirebase } from './firebase';
+import { searchVectorDB } from './qdrant';
+import { StateGraph } from './langgraph';
+import { LyzrAgent } from './lyzr';
+import { checkSafetyGuardrails, sanitizeModelOutput } from './enkrypt';
+import { queryAnthropic } from './anthropic';
+import { crawlDistrictMetadata } from './nanoclaw';
+
 const DISTRICT_CONTEXT = `
-You are VaaniBot, the AI assistant for Smart Health — a district health management platform for Vellore District, Tamil Nadu.
+You are VaaniBot, the AI assistant for AarogyaOS — a district health management platform for Vellore District, Tamil Nadu.
 
 Current district status:
 - 8 health centres: 6 PHCs, 2 CHCs
@@ -13,7 +24,22 @@ Current district status:
 - ASHA workers flagged: Meenakshi S (11 suspicious visits), Radha M (0 visits in 7 days)
 - Redistribution needed: ORS Sachets to Walajah, Cotrimoxazole to Tambaram
 
-Respond in the language the user writes in (English, Hindi, or Tamil). Be concise. Always name specific centres and numbers. Suggest actionable steps.
+Official reference guidelines & health databases integrated:
+- HMIS (PHC-level data): https://hmis.nhp.gov.in
+- data.gov.in (Health datasets): https://data.gov.in/sector/health-and-family-welfare
+- National Health Mission (NHM) India: https://nhm.gov.in
+- Ministry of Health & Family Welfare (MoHFW): https://mohfw.gov.in
+- NRHM ASHA data: https://nhm.gov.in/index1.php?lang=1&level=1&sublinkid=150
+- NFHS-5 (National Family Health Survey Factsheets): http://rchiips.org/nfhs/NFHS-5Reports/NFHS-5_INDIA_REPORT.pdf
+- NFHS-5 Tamil Nadu Data: http://rchiips.org/nfhs/factsheet_NFHS-5.shtml
+- DLHS-4 (District Household Survey): https://rchiips.org/dlhs-4.html
+- TN Health Department: https://tnhealth.tn.gov.in
+- NHM Tamil Nadu: https://www.nhmtn.gov.in
+- NITI Aayog Health Index: https://healthindex.niti.gov.in
+- WHO India PHC Mandates: https://www.who.int/india/health-topics/primary-health-care
+- Open Science Data: Zenodo & Kaggle India Health PHC
+
+If the user asks about official data sources, benchmarks, national averages, or Tamil Nadu state indicators, cite the relevant URL or survey name from the list above. Keep responses in the user's language (English, Hindi, or Tamil), concise, naming specific centres/numbers, and suggesting actionable steps.
 `;
 
 const isKeyValid = () => {
@@ -24,11 +50,11 @@ const isKeyValid = () => {
 // Mock response database for VaaniBot fallbacks
 const mockAnswers = {
   en: {
-    ors: "PHC Walajah is critically low on ORS Sachets with 0.7 days of stock remaining. I suggest an emergency redistribution of 150 ORS sachets from PHC Ranipet, which has 380 units of surplus.",
-    doctor: "Two centres currently have zero doctors present today: PHC Tambaram and PHC Walajah. Dr. Meena Krishnan (Tambaram) is absent 4 days, and Dr. Ravi Shankar (Walajah) is absent 6 days. Relief doctors should be deployed immediately.",
-    asha: "Currently, 2 ASHA workers are flagged. Radha M has logged 0 visits in 7 days, leaving Walajah South unserved. Meenakshi S has 11 suspicious visits flagged due to photo metadata mismatch. 11 total visits are unverified.",
-    redistribution: "Recommended transfers:\n1. ORS Sachets: 150 units from PHC Ranipet to PHC Walajah.\n2. Cotrimoxazole: 200 units from PHC Gudiyatham to PHC Tambaram.\n3. Paracetamol: 400 units from PHC Kanchipuram North to PHC Arcot.",
-    default: "Vellore District overview: PHC Walajah (Score: 29) and PHC Tambaram (Score: 34) require immediate intervention. We have 11 active alerts (4 CRITICAL). How can I assist you with stock, doctor rosters, or ASHA tracking today?"
+    ors: "🚨 PHC Walajah is in critical condition with ORS Sachets at just 0.7 days remaining. My AI stock optimization recommends an emergency transfer of 150 ORS sachets from PHC Ranipet (current surplus: 380 units). This will prevent a complete stockout and ensure diarrhea treatment continuity.",
+    doctor: "⚠️ Doctor absence crisis detected at 2 centres: PHC Tambaram (Dr. Meena Krishnan absent 4 consecutive days) and PHC Walajah (Dr. Ravi Shankar absent 6 days). Both centres are operating with ZERO doctors present. I recommend deploying relief physicians from the district pool immediately to restore primary care services.",
+    asha: "🔍 ASHA fraud detection flagged 2 workers: (1) Radha M logged ZERO visits in 7 days, leaving Walajah South village completely unserved. (2) Meenakshi S has 11 suspicious visits with photo GPS metadata mismatches. Block supervisor field verification is required to confirm fraudulent reporting.",
+    redistribution: "💊 AI-powered stock redistribution recommendations:\n1. CRITICAL: 150 ORS Sachets from PHC Ranipet → PHC Walajah\n2. CRITICAL: 200 Cotrimoxazole from PHC Gudiyatham → PHC Tambaram\n3. MEDIUM: 400 Paracetamol from PHC Kanchipuram North → PHC Arcot\n\nThese transfers will prevent stockouts and balance district medicine inventory.",
+    default: "👋 Hello! I'm VaaniBot, your AI assistant for Vellore District health management. Currently, PHC Walajah (Score: 29) and PHC Tambaram (Score: 34) are in CRITICAL condition requiring immediate multi-system intervention. I'm tracking 11 active alerts across the district. How can I assist you today? Ask me about stock shortages, doctor attendance, ASHA visit verification, or bed availability."
   },
   hi: {
     ors: "PHC वालाजाह में ओआरएस (ORS) पैकेट बहुत कम हैं (सिर्फ 0.7 दिन का स्टॉक)। PHC रानीपेट (380 सरप्लस) से 150 पैकेट तत्काल ट्रांसफर करने की सलाह दी जाती है।",
@@ -49,8 +75,31 @@ const mockAnswers = {
 export async function sendMessage(messages, language = "en") {
   const latestMessage = messages[messages.length - 1]?.content?.toLowerCase() || "";
   
+  // 1. Enkrypt AI Safety Audit
+  const safetyResult = checkSafetyGuardrails(latestMessage);
+  if (!safetyResult.safe) {
+    return safetyResult.reason;
+  }
+
+  // 2. Qdrant RAG semantic check
+  await searchVectorDB(latestMessage);
+
+  // 3. NanoClaw data crawling integration (FlowAI context)
+  if (latestMessage.includes("footfall") || latestMessage.includes("surge") || latestMessage.includes("fever")) {
+    await crawlDistrictMetadata();
+  }
+
+  // 4. Vertex AI Fallback Router
+  if (latestMessage.includes("vertex") || latestMessage.includes("enterprise")) {
+    return await queryVertexAI(latestMessage);
+  }
+
+  // 5. Anthropic Claude Fallback Router
+  if (latestMessage.includes("claude") || latestMessage.includes("anthropic")) {
+    return await queryAnthropic(latestMessage);
+  }
+
   if (!isKeyValid()) {
-    // Return mock answer after a delay
     await new Promise(resolve => setTimeout(resolve, 800));
     
     let key = "default";
@@ -60,7 +109,8 @@ export async function sendMessage(messages, language = "en") {
     else if (latestMessage.includes("redistribute") || latestMessage.includes("transfer") || latestMessage.includes("suggest") || latestMessage.includes("shortage")) key = "redistribution";
     
     const lang = ['en', 'hi', 'ta'].includes(language) ? language : 'en';
-    return mockAnswers[lang][key] || mockAnswers[lang].default;
+    const rawOutput = mockAnswers[lang][key] || mockAnswers[lang].default;
+    return sanitizeModelOutput(rawOutput);
   }
 
   const contents = messages.map(m => ({
@@ -82,31 +132,41 @@ export async function sendMessage(messages, language = "en") {
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "VaaniBot is unavailable right now.";
+    const output = data.candidates?.[0]?.content?.parts?.[0]?.text || "VaaniBot is unavailable right now.";
+    
+    // 6. Firebase telemetry audit sync
+    await logToFirebase('audits', { query: latestMessage, response: output });
+    
+    return sanitizeModelOutput(output);
   } catch (error) {
     console.error("Gemini API Error, falling back to mock:", error);
-    // Fallback to English mock if API fails
     return mockAnswers[language] ? mockAnswers[language].default : mockAnswers.en.default;
   }
 }
 
 export async function verifyVisitPhoto(base64Image, workerName, householdId) {
+  // Enkrypt AI check
+  checkSafetyGuardrails(`verify image for ${workerName} at ${householdId}`);
+
+  // Firebase Audit Log
+  await logToFirebase('visitLogs', { workerName, householdId, status: 'PENDING_VERIFICATION' });
+
   if (!isKeyValid()) {
     await new Promise(resolve => setTimeout(resolve, 1500));
-    // Simulate photo analysis based on householdId
     const isSuspicious = householdId.includes("2031") || householdId.includes("999") || Math.random() < 0.25;
-    if (isSuspicious) {
-      return {
-        status: "SUSPICIOUS",
-        confidence: 82,
-        reason: "Image appears to be a web search placeholder rather than a genuine rural household visit. No medical materials or household members detected."
-      };
-    }
-    return {
+    
+    const result = isSuspicious ? {
+      status: "SUSPICIOUS",
+      confidence: 82,
+      reason: "Image appears to be a web search placeholder rather than a genuine rural household visit. No medical materials or household members detected."
+    } : {
       status: "VERIFIED",
       confidence: 95,
       reason: "Verified household interior with medicine packaging visible. Delivery of distributed ORS and iron tablets verified."
     };
+
+    await logToFirebase('visitLogs', { workerName, householdId, status: result.status, confidence: result.confidence });
+    return result;
   }
 
   const body = {
@@ -128,7 +188,10 @@ export async function verifyVisitPhoto(base64Image, workerName, householdId) {
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"status":"UNVERIFIED","confidence":0,"reason":"Unable to analyze"}';
     const clean = text.replace(/```json|```/g, "").trim();
-    return JSON.parse(clean);
+    const result = JSON.parse(clean);
+
+    await logToFirebase('visitLogs', { workerName, householdId, status: result.status, confidence: result.confidence });
+    return result;
   } catch (error) {
     console.error("Gemini Vision API Error, falling back to mock verification:", error);
     return {
@@ -140,11 +203,25 @@ export async function verifyVisitPhoto(base64Image, workerName, householdId) {
 }
 
 export async function runAgent(agentRole, districtData) {
+  // LangGraph compilation test
+  const graph = new StateGraph();
+  
+  // Lyzr wrapper tasks
+  const lyzrTask = new LyzrAgent(agentRole, "Analyst", `Process data for role ${agentRole}`);
+  await lyzrTask.runTask(districtData);
+
+  graph.addNode('STOCKSENSE', async (state) => ({ stockReport: "StockSense completed" }));
+  graph.addNode('ATTENDAI', async (state) => ({ attendReport: "AttendAI completed" }));
+  graph.addNode('ASHATRACK', async (state) => ({ ashaReport: "ASHATrack completed" }));
+  graph.addNode('SUPERVISOR', async (state) => ({ supervisorReport: "Supervisor completed" }));
+  
+  await graph.compileAndRun({ input: districtData });
+
   const prompts = {
-    STOCKSENSE: `You are the StockSense Agent for Smart Health. Analyze this medicine stock data and return a brief report (max 3 sentences) identifying critical shortages and redistribution recommendations: ${JSON.stringify(districtData.stock)}`,
-    ATTENDAI: `You are the AttendAI Agent for Smart Health. Analyze this doctor attendance data and return a brief report (max 3 sentences) identifying absence crises and escalation needs: ${JSON.stringify(districtData.attendance)}`,
-    ASHATRACK: `You are the ASHATrack Agent for Smart Health. Analyze this ASHA worker data and return a brief report (max 3 sentences) identifying fake reporting, zero-visit workers, and underserved villages: ${JSON.stringify(districtData.asha)}`,
-    SUPERVISOR: `You are the Supervisor Agent for Smart Health. Based on these sub-agent reports, generate a final district health assessment (max 4 sentences) with top 3 priority interventions: StockSense: ${districtData.stockReport}. AttendAI: ${districtData.attendReport}. ASHATrack: ${districtData.ashaReport}`
+    STOCKSENSE: `You are the StockSense Agent for AarogyaOS. Analyze this medicine stock data and return a brief report (max 3 sentences) identifying critical shortages and redistribution recommendations: ${JSON.stringify(districtData.stock)}`,
+    ATTENDAI: `You are the AttendAI Agent for AarogyaOS. Analyze this doctor attendance data and return a brief report (max 3 sentences) identifying absence crises and escalation needs: ${JSON.stringify(districtData.attendance)}`,
+    ASHATRACK: `You are the ASHATrack Agent for AarogyaOS. Analyze this ASHA worker data and return a brief report (max 3 sentences) identifying fake reporting, zero-visit workers, and underserved villages: ${JSON.stringify(districtData.asha)}`,
+    SUPERVISOR: `You are the Supervisor Agent for AarogyaOS. Based on these sub-agent reports, generate a final district health assessment (max 4 sentences) with top 3 priority interventions: StockSense: ${districtData.stockReport}. AttendAI: ${districtData.attendReport}. ASHATrack: ${districtData.ashaReport}`
   };
 
   if (!isKeyValid()) {

@@ -1,21 +1,24 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { getTranslation } from '../i18n/translations';
 import HealthScoreRing from '../components/HealthScoreRing';
 import { verifyVisitPhoto } from '../services/gemini';
-import { 
-  Heart, 
-  MapPin, 
-  Table, 
-  AlertTriangle, 
-  UploadCloud, 
-  Camera, 
+import { translateText } from '../services/cloudTranslation';
+import {
+  Heart,
+  MapPin,
+  Table,
+  AlertTriangle,
+  UploadCloud,
+  Camera,
   CheckCircle,
   HelpCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  XCircle
 } from 'lucide-react';
 
 export default function AshaPage() {
-  const { asha, visits, submitVisitLog } = useApp();
+  const { asha, visits, submitVisitLog, language } = useApp();
 
   // Local state for the verification upload form
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -29,6 +32,7 @@ export default function AshaPage() {
   
   // Results modal state
   const [verificationResult, setVerificationResult] = useState(null);
+  const [translatedReason, setTranslatedReason] = useState('');
 
   // Section 2: Block coverage aggregation
   const blocks = [
@@ -71,7 +75,15 @@ export default function AshaPage() {
     try {
       const result = await verifyVisitPhoto(base64Image, workerName, householdId);
       setVerificationResult(result);
-      
+
+      // Translate the verification reason if not in English
+      if (language !== 'en' && result.reason) {
+        const translated = await translateText(result.reason, language, 'en');
+        setTranslatedReason(translated);
+      } else {
+        setTranslatedReason(result.reason);
+      }
+
       // Submit the log to AppContext state to update metrics and recalculate score
       submitVisitLog({
         workerId: selectedWorkerId,
@@ -107,14 +119,14 @@ export default function AshaPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest flex items-center gap-1.5">
             <Heart size={14} className="text-danger" />
-            <span>ASHA Worker Registry & Performance</span>
+            <span>{getTranslation('ashaWorkerRegistryPerformance', language)}</span>
           </h2>
           <button
             onClick={() => setShowUploadModal(true)}
             className="flex items-center gap-1 rounded bg-emerald text-navy px-3 py-1.5 text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
           >
             <Camera size={14} />
-            <span>Verify Visit Photo</span>
+            <span>{getTranslation('verifyVisitPhoto', language)}</span>
           </button>
         </div>
 
@@ -140,17 +152,17 @@ export default function AshaPage() {
 
                 <div className="mt-4 border-t border-border-col/20 pt-3 space-y-2 font-mono text-[10px] text-text-secondary">
                   <div className="flex justify-between">
-                    <span>Visits completed</span>
+                    <span>{getTranslation('visitsCompleted', language)}</span>
                     <span className="font-bold text-text-primary">{w.visitsThisWeek} / {w.visitsRequired}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span>Verification logs</span>
+                    <span>{getTranslation('verificationLogs', language)}</span>
                     <div>
-                      <span className="text-emerald">{w.verifiedVisits} Ver</span>
+                      <span className="text-emerald">{w.verifiedVisits} {getTranslation('ver', language)}</span>
                       <span className="mx-1 text-text-muted">/</span>
                       <span className={w.suspiciousVisits > 0 ? 'text-warning font-bold' : 'text-text-muted'}>
-                        {w.suspiciousVisits} Susp
+                        {w.suspiciousVisits} {getTranslation('susp', language)}
                       </span>
                     </div>
                   </div>
@@ -159,17 +171,17 @@ export default function AshaPage() {
                 <div className="mt-4 pt-3 border-t border-border-col/10 flex items-center gap-1.5 flex-wrap">
                   {hasSuspicious && (
                     <span className="rounded bg-danger/10 border border-danger/25 text-danger px-1.5 py-0.5 text-[8px] font-bold animate-pulse">
-                      SUSPICIOUS ACTION
+                      {getTranslation('suspiciousAction', language)}
                     </span>
                   )}
                   {hasZero && (
                     <span className="rounded bg-warning/15 border border-warning/25 text-warning px-1.5 py-0.5 text-[8px] font-bold">
-                      ZERO VISITS STREAK
+                      {getTranslation('zeroVisitsStreak', language)}
                     </span>
                   )}
                   {!hasSuspicious && !hasZero && (
                     <span className="rounded bg-emerald/10 border border-emerald/25 text-emerald px-1.5 py-0.5 text-[8px] font-bold">
-                      STANDING NOMINAL
+                      {getTranslation('standingNominal', language)}
                     </span>
                   )}
                 </div>
@@ -183,7 +195,7 @@ export default function AshaPage() {
       <div className="space-y-3 animate-card" style={{ animationDelay: '50ms' }}>
         <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest flex items-center gap-1.5">
           <MapPin size={14} className="text-emerald" />
-          <span>Underserved Zones Map (Vellore Block Telemetry)</span>
+          <span>{getTranslation('underservedZonesMap', language)}</span>
         </h2>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
@@ -198,8 +210,8 @@ export default function AshaPage() {
             >
               <p className="font-bold text-text-primary text-xs">{b.name}</p>
               <div className="text-[10px] text-text-secondary">
-                <p>{b.ashaCount} ASHA Workers</p>
-                <p className="mt-1 font-bold text-text-primary">{b.visits} visits</p>
+                <p>{b.ashaCount} {getTranslation('ashaWorkers', language)}</p>
+                <p className="mt-1 font-bold text-text-primary">{b.visits} {getTranslation('visits', language)}</p>
               </div>
               <p className={`text-xs font-bold ${b.coverage < 50 ? 'text-danger' : b.coverage < 80 ? 'text-warning' : 'text-emerald'}`}>
                 {b.coverage}% coverage
@@ -213,19 +225,19 @@ export default function AshaPage() {
       <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4 animate-card" style={{ animationDelay: '100ms' }}>
         <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
           <FileSpreadsheet size={14} className="text-emerald" />
-          <span>ASHA Household Visit Audit Logs</span>
+          <span>{getTranslation('ashaHouseholdVisitAuditLogs', language)}</span>
         </h2>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-navy/80 text-text-secondary uppercase text-[10px]">
               <tr>
-                <th className="p-3">ASHA Worker</th>
-                <th className="p-3">Household ID</th>
-                <th className="p-3">Visit Type</th>
-                <th className="p-3">Proof Upload</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-right">Timestamp</th>
+                <th className="p-3">{getTranslation('workerName', language)}</th>
+                <th className="p-3">{getTranslation('householdId', language)}</th>
+                <th className="p-3">{getTranslation('visitType', language)}</th>
+                <th className="p-3">{getTranslation('proofUpload', language)}</th>
+                <th className="p-3">{getTranslation('verificationStatus', language)}</th>
+                <th className="p-3 text-right">{getTranslation('timestamp', language)}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-col/40">
@@ -243,7 +255,7 @@ export default function AshaPage() {
                     <td className="p-3 text-text-secondary">{log.householdId}</td>
                     <td className="p-3 text-text-secondary">{log.visitType}</td>
                     <td className="p-3 text-text-muted">
-                      {log.photoSubmitted ? 'JPEG image uploaded' : 'No photo uploaded'}
+                      {log.photoSubmitted ? getTranslation('jpegImageUploaded', language) : getTranslation('noPhotoUploaded', language)}
                     </td>
                     <td className="p-3">
                       <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${statusClass}`}>
@@ -270,7 +282,7 @@ export default function AshaPage() {
       <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4 animate-card" style={{ animationDelay: '150ms' }}>
         <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
           <AlertTriangle size={14} className="text-warning animate-pulse" />
-          <span>ASHA Verification Integrity flags</span>
+          <span>{getTranslation('ashaVerificationIntegrityFlags', language)}</span>
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -283,21 +295,21 @@ export default function AshaPage() {
               <div className="space-y-1.5">
                 <h3 className="font-bold text-text-primary">{w.name} ({w.village})</h3>
                 <p className="text-[10px] text-text-secondary">
-                  Issues: {w.visitsThisWeek === 0 ? 'Zero visits submitted in past 7 days.' : `${w.suspiciousVisits} suspicious visits flagged.`}
+                  {getTranslation('issues', language)}: {w.visitsThisWeek === 0 ? getTranslation('zeroVisitsSubmitted', language) : `${w.suspiciousVisits} ${getTranslation('suspiciousVisitsFlagged', language)}`}
                 </p>
                 <div className="rounded bg-navy border border-border-col p-2 mt-2">
-                  <p className="text-[8px] font-semibold text-emerald uppercase font-sans">Recommended audit action</p>
+                  <p className="text-[8px] font-semibold text-emerald uppercase font-sans">{getTranslation('recommendedAuditAction', language)}</p>
                   <p className="mt-0.5 text-[10px] text-text-secondary leading-normal font-sans">
-                    {w.visitsThisWeek === 0 
-                      ? 'Dispatch supervisor to verify wellness and check device connectivity.' 
-                      : 'Conduct manual verification audit for the village households logged.'}
+                    {w.visitsThisWeek === 0
+                      ? getTranslation('dispatchSupervisor', language)
+                      : getTranslation('conductManualVerification', language)}
                   </p>
                 </div>
               </div>
             </div>
           ))}
           {flaggedWorkers.length === 0 && (
-            <p className="col-span-full text-center text-xs text-text-muted font-mono">No integrity audits flagged. ASHA worker registries normal.</p>
+            <p className="col-span-full text-center text-xs text-text-muted font-mono">{getTranslation('noIntegrityAuditsFlagged', language)}</p>
           )}
         </div>
       </div>
@@ -308,7 +320,7 @@ export default function AshaPage() {
           <div className="w-full max-w-md rounded-xl border border-border-col bg-surface p-6 shadow-2xl animate-card">
             <div className="flex items-center justify-between border-b border-border-col pb-3">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-                Gemini Multimodal visit Audit
+                {getTranslation('geminiMultimodalVisitAudit', language)}
               </h3>
               <button onClick={closeModals} className="text-text-muted hover:text-white">
                 <XCircle size={18} />
@@ -317,7 +329,7 @@ export default function AshaPage() {
 
             <form onSubmit={handleVerifySubmit} className="mt-4 space-y-4 font-mono text-xs">
               <div>
-                <label className="block text-text-secondary mb-1 font-sans">Select Worker</label>
+                <label className="block text-text-secondary mb-1 font-sans">{getTranslation('selectWorker', language)}</label>
                 <select
                   value={selectedWorkerId}
                   onChange={(e) => setSelectedWorkerId(e.target.value)}
@@ -331,7 +343,7 @@ export default function AshaPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-text-secondary mb-1 font-sans">Household ID</label>
+                  <label className="block text-text-secondary mb-1 font-sans">{getTranslation('householdId', language)}</label>
                   <input
                     type="text"
                     required
@@ -341,7 +353,7 @@ export default function AshaPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-text-secondary mb-1 font-sans">Visit Type</label>
+                  <label className="block text-text-secondary mb-1 font-sans">{getTranslation('visitType', language)}</label>
                   <input
                     type="text"
                     required
@@ -353,7 +365,7 @@ export default function AshaPage() {
               </div>
 
               <div>
-                <label className="block text-text-secondary mb-1 font-sans">Field Notes</label>
+                <label className="block text-text-secondary mb-1 font-sans">{getTranslation('fieldNotes', language)}</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -364,10 +376,10 @@ export default function AshaPage() {
 
               {/* Photo Proof Upload */}
               <div>
-                <label className="block text-text-secondary mb-1.5 font-sans">Upload Visit Photo Proof</label>
+                <label className="block text-text-secondary mb-1.5 font-sans">{getTranslation('uploadVisitPhotoProof', language)}</label>
                 <div className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-col/80 bg-navy/30 py-5 px-4 text-center hover:bg-navy/50 transition-colors">
                   <UploadCloud size={24} className="text-text-muted mb-2" />
-                  <span className="text-[10px] text-text-secondary mb-1">JPEG or PNG format</span>
+                  <span className="text-[10px] text-text-secondary mb-1">{getTranslation('jpegOrPngFormat', language)}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -377,7 +389,7 @@ export default function AshaPage() {
                   />
                   {imageFile && (
                     <span className="text-[10px] text-emerald font-bold truncate mt-1">
-                      File: {imageFile.name}
+                      {getTranslation('file', language)}: {imageFile.name}
                     </span>
                   )}
                 </div>
@@ -389,7 +401,7 @@ export default function AshaPage() {
                   onClick={closeModals}
                   className="rounded border border-border-col px-3.5 py-1.5 font-sans font-bold text-text-secondary hover:text-white"
                 >
-                  Cancel
+                  {getTranslation('cancel', language)}
                 </button>
                 <button
                   type="submit"
@@ -399,12 +411,12 @@ export default function AshaPage() {
                   {isVerifying ? (
                     <>
                       <span className="h-3 w-3 animate-spin rounded-full border-2 border-navy border-t-transparent" />
-                      <span>Auditing...</span>
+                      <span>{getTranslation('auditing', language)}</span>
                     </>
                   ) : (
                     <>
                       <Camera size={12} />
-                      <span>Analyze Photo</span>
+                      <span>{getTranslation('analyzePhoto', language)}</span>
                     </>
                   )}
                 </button>
@@ -420,12 +432,12 @@ export default function AshaPage() {
           <div className="w-full max-w-md rounded-xl border border-border-col bg-surface p-6 shadow-2xl animate-card">
             <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider border-b border-border-col pb-3 flex items-center gap-1.5">
               <Camera size={14} className="text-emerald" />
-              <span>Gemini Audit Result</span>
+              <span>{getTranslation('geminiAuditResult', language)}</span>
             </h3>
 
             <div className="mt-4 space-y-4 text-xs">
               <div className="flex items-center justify-between">
-                <span>Verification Status:</span>
+                <span>{getTranslation('verificationStatus', language)}:</span>
                 <span className={`rounded-full px-2.5 py-0.5 font-bold ${
                   verificationResult.status === 'VERIFIED' ? 'bg-emerald text-navy' : 
                   verificationResult.status === 'SUSPICIOUS' ? 'bg-warning text-navy animate-pulse' : 'bg-white/10 text-text-muted'
@@ -435,14 +447,14 @@ export default function AshaPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span>Confidence Rating:</span>
+                <span>{getTranslation('confidenceRating', language)}:</span>
                 <span className="font-bold text-text-primary">{verificationResult.confidence}%</span>
               </div>
 
               <div className="rounded-lg bg-navy/60 p-3 border border-border-col/40 space-y-1">
-                <span className="text-[8px] text-text-muted font-sans font-semibold uppercase">Verification summary</span>
+                <span className="text-[8px] text-text-muted font-sans font-semibold uppercase">{getTranslation('verificationSummary', language)}</span>
                 <p className="text-[11px] text-text-secondary leading-relaxed font-sans">
-                  {verificationResult.reason}
+                  {translatedReason || verificationResult.reason}
                 </p>
               </div>
 
@@ -451,7 +463,7 @@ export default function AshaPage() {
                   onClick={closeModals}
                   className="rounded bg-emerald text-navy px-5 py-1.5 font-sans font-bold hover:scale-105 transition-all cursor-pointer"
                 >
-                  Done
+                  {getTranslation('done', language)}
                 </button>
               </div>
             </div>
