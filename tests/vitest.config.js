@@ -1,20 +1,22 @@
 import { defineConfig, configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
   test: {
+    root: path.resolve(__dirname, '..'),
     environment: 'jsdom',
     globals: true,
-    setupFiles: './test/setup.js',
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    setupFiles: './tests/setup.js',
+    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: [
-        'src/lib/security/**',
-        'src/components/HealthScoreRing.jsx',
-        'src/components/VaaniBot.jsx'
+        'frontend/src/lib/security/**',
+        'frontend/src/components/HealthScoreRing.jsx',
+        'frontend/src/components/VaaniBot.jsx'
       ],
       thresholds: {
         lines: 60,

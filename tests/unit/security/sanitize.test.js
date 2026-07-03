@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeInput, escapeHtml, redactSecrets } from '../../src/lib/security/sanitize';
+import { sanitizeInput, escapeHtml, redactSecrets } from '../../../frontend/src/lib/security/sanitize';
 
 describe('Input Sanitization & Secrets Redaction Security Checks', () => {
   

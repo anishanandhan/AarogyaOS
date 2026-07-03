@@ -23,7 +23,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npx vite --port 3000',
+    command: 'npm run dev --prefix ../frontend -- --port 3000',
     port: 3000,
     reuseExistingServer: !process.env.CI,
   },

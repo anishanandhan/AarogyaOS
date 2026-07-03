@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import VaaniBot from '../../src/components/VaaniBot';
+import VaaniBot from '../../../frontend/src/components/VaaniBot';
 import { axe, toHaveNoViolations } from 'jest-axe';
 
 expect.extend(toHaveNoViolations);
 
 // Mock AppContext
-vi.mock('../../src/context/AppContext', () => ({
+vi.mock('../../../frontend/src/context/AppContext', () => ({
   useApp: () => ({
     language: 'en',
     setLanguage: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('../../src/context/AppContext', () => ({
 }));
 
 // Mock Gemini Service
-vi.mock('../../src/services/gemini', () => ({
+vi.mock('../../../frontend/src/services/gemini', () => ({
   sendMessage: vi.fn().mockResolvedValue('This is an automated mock response from Gemini.'),
 }));
 

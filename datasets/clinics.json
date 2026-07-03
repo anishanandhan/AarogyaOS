@@ -1,0 +1,23 @@
+{
+  "district": "Vellore, Tamil Nadu",
+  "centres": [
+    { "id": "phc-001", "name": "PHC Tambaram", "type": "PHC", "block": "Tambaram", "healthScore": 34, "bedsTotal": 10, "bedsOccupied": 8, "doctorsOnRoll": 2, "doctorsPresent": 0, "lastUpdated": "2026-07-01T08:30:00" },
+    { "id": "phc-002", "name": "PHC Kanchipuram North", "type": "PHC", "block": "Kanchipuram", "healthScore": 71, "bedsTotal": 12, "bedsOccupied": 5, "doctorsOnRoll": 3, "doctorsPresent": 3, "lastUpdated": "2026-07-01T09:00:00" },
+    { "id": "chc-001", "name": "CHC Vellore Central", "type": "CHC", "block": "Vellore", "healthScore": 58, "bedsTotal": 30, "bedsOccupied": 22, "doctorsOnRoll": 6, "doctorsPresent": 4, "lastUpdated": "2026-07-01T08:45:00" },
+    { "id": "phc-003", "name": "PHC Gudiyatham", "type": "PHC", "block": "Gudiyatham", "healthScore": 82, "bedsTotal": 10, "bedsOccupied": 3, "doctorsOnRoll": 2, "doctorsPresent": 2, "lastUpdated": "2026-07-01T09:15:00" },
+    { "id": "phc-004", "name": "PHC Arcot", "type": "PHC", "block": "Arcot", "healthScore": 45, "bedsTotal": 8, "bedsOccupied": 7, "doctorsOnRoll": 2, "doctorsPresent": 1, "lastUpdated": "2026-07-01T08:00:00" },
+    { "id": "phc-005", "name": "PHC Ranipet", "type": "PHC", "block": "Ranipet", "healthScore": 91, "bedsTotal": 10, "bedsOccupied": 2, "doctorsOnRoll": 2, "doctorsPresent": 2, "lastUpdated": "2026-07-01T09:30:00" },
+    { "id": "phc-006", "name": "PHC Walajah", "type": "PHC", "block": "Walajah", "healthScore": 29, "bedsTotal": 8, "bedsOccupied": 8, "doctorsOnRoll": 1, "doctorsPresent": 0, "lastUpdated": "2026-07-01T07:45:00" },
+    { "id": "chc-002", "name": "CHC Katpadi", "type": "CHC", "block": "Katpadi", "healthScore": 63, "bedsTotal": 25, "bedsOccupied": 14, "doctorsOnRoll": 5, "doctorsPresent": 4, "lastUpdated": "2026-07-01T09:00:00" }
+  ],
+  "medicines": [
+    { "id": "m1", "name": "Paracetamol 500mg", "unit": "tablets", "reorderLevel": 500 },
+    { "id": "m2", "name": "ORS Sachets", "unit": "sachets", "reorderLevel": 200 },
+    { "id": "m3", "name": "Amoxicillin 250mg", "unit": "capsules", "reorderLevel": 300 },
+    { "id": "m4", "name": "Metformin 500mg", "unit": "tablets", "reorderLevel": 400 },
+    { "id": "m5", "name": "Iron-Folic Acid", "unit": "tablets", "reorderLevel": 600 },
+    { "id": "m6", "name": "Cotrimoxazole", "unit": "tablets", "reorderLevel": 200 },
+    { "id": "m7", "name": "Chloroquine", "unit": "tablets", "reorderLevel": 150 },
+    { "id": "m8", "name": "Ringer Lactate IV", "unit": "bottles", "reorderLevel": 50 }
+  ]
+}

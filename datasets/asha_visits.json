@@ -1,0 +1,33 @@
+{
+  "ashaWorkers": [
+    { "id": "asha-001", "name": "Lakshmi Devi", "centreId": "phc-001", "block": "Tambaram", "village": "Perungalathur", "householdsAssigned": 120, "visitsThisWeek": 18, "visitsRequired": 20, "verifiedVisits": 15, "suspiciousVisits": 2, "workerScore": 72, "lastVisit": "2026-07-01T10:00:00" },
+    { "id": "asha-002", "name": "Sumathi R", "centreId": "phc-001", "block": "Tambaram", "village": "Chitlapakkam", "householdsAssigned": 95, "visitsThisWeek": 5, "visitsRequired": 19, "verifiedVisits": 3, "suspiciousVisits": 0, "workerScore": 28, "lastVisit": "2026-06-27T14:00:00" },
+    { "id": "asha-003", "name": "Parvathi K", "centreId": "phc-002", "block": "Kanchipuram", "village": "Uthiramerur", "householdsAssigned": 110, "visitsThisWeek": 22, "visitsRequired": 22, "verifiedVisits": 22, "suspiciousVisits": 0, "workerScore": 98, "lastVisit": "2026-07-01T11:30:00" },
+    { "id": "asha-004", "name": "Meenakshi S", "centreId": "phc-006", "block": "Walajah", "village": "Arcot North", "householdsAssigned": 88, "visitsThisWeek": 21, "visitsRequired": 18, "verifiedVisits": 8, "suspiciousVisits": 11, "workerScore": 31, "lastVisit": "2026-07-01T09:00:00" },
+    { "id": "asha-005", "name": "Gomathi V", "centreId": "phc-003", "block": "Gudiyatham", "village": "Gudiyatham West", "householdsAssigned": 130, "visitsThisWeek": 25, "visitsRequired": 26, "verifiedVisits": 24, "suspiciousVisits": 0, "workerScore": 94, "lastVisit": "2026-07-01T12:00:00" },
+    { "id": "asha-006", "name": "Radha M", "centreId": "phc-006", "block": "Walajah", "village": "Walajah South", "householdsAssigned": 102, "visitsThisWeek": 0, "visitsRequired": 20, "verifiedVisits": 0, "suspiciousVisits": 0, "workerScore": 5, "lastVisit": "2026-06-24T08:00:00" }
+  ],
+  "visitLogs": [
+    { "id": "v1", "workerId": "asha-001", "workerName": "Lakshmi Devi", "householdId": "HH-1042", "visitType": "ANC Checkup", "notes": "Blood pressure measured, iron tablets distributed", "photoSubmitted": true, "verificationStatus": "VERIFIED", "timestamp": "2026-07-01T10:00:00" },
+    { "id": "v2", "workerId": "asha-004", "workerName": "Meenakshi S", "householdId": "HH-2031", "visitType": "Immunization", "notes": "Child vaccination done", "photoSubmitted": true, "verificationStatus": "SUSPICIOUS", "timestamp": "2026-07-01T09:00:00", "suspicionReason": "Photo metadata does not match reported location" },
+    { "id": "v3", "workerId": "asha-002", "workerName": "Sumathi R", "householdId": "HH-1155", "visitType": "TB Follow-up", "notes": "Patient not at home", "photoSubmitted": false, "verificationStatus": "UNVERIFIED", "timestamp": "2026-06-27T14:00:00" },
+    { "id": "v4", "workerId": "asha-003", "workerName": "Parvathi K", "householdId": "HH-3022", "visitType": "Postnatal Care", "notes": "Mother and baby healthy, ORS distributed", "photoSubmitted": true, "verificationStatus": "VERIFIED", "timestamp": "2026-07-01T11:30:00" },
+    { "id": "v5", "workerId": "asha-005", "workerName": "Gomathi V", "householdId": "HH-4011", "visitType": "Hypertension Follow-up", "notes": "BP tablets refilled, diet counselling done", "photoSubmitted": true, "verificationStatus": "VERIFIED", "timestamp": "2026-07-01T12:00:00" }
+  ],
+  "attendanceData": [
+    { "centreId": "phc-001", "centreName": "PHC Tambaram", "doctor": "Dr. Meena Krishnan", "specialization": "General Medicine", "consecutiveAbsent": 4, "status": "ABSENT" },
+    { "centreId": "phc-001", "centreName": "PHC Tambaram", "doctor": "Dr. Suresh Babu", "specialization": "General Surgery", "consecutiveAbsent": 0, "status": "PRESENT" },
+    { "centreId": "phc-006", "centreName": "PHC Walajah", "doctor": "Dr. Ravi Shankar", "specialization": "General Medicine", "consecutiveAbsent": 6, "status": "ABSENT" },
+    { "centreId": "chc-001", "centreName": "CHC Vellore Central", "doctor": "Dr. Priya Nair", "specialization": "Gynaecology", "consecutiveAbsent": 0, "status": "PRESENT" },
+    { "centreId": "chc-001", "centreName": "CHC Vellore Central", "doctor": "Dr. Arun Kumar", "specialization": "Paediatrics", "consecutiveAbsent": 2, "status": "ABSENT" },
+    { "centreId": "chc-001", "centreName": "CHC Vellore Central", "doctor": "Dr. Lakshmi Devi", "specialization": "General Medicine", "consecutiveAbsent": 0, "status": "PRESENT" },
+    { "centreId": "phc-002", "centreName": "PHC Kanchipuram North", "doctor": "Dr. Vijay Kumar", "specialization": "General Medicine", "consecutiveAbsent": 0, "status": "PRESENT" },
+    { "centreId": "phc-003", "centreName": "PHC Gudiyatham", "doctor": "Dr. Anitha Selvam", "specialization": "General Medicine", "consecutiveAbsent": 0, "status": "PRESENT" }
+  ],
+  "redistributionSuggestions": [
+    { "from": "PHC Ranipet", "to": "PHC Walajah", "medicine": "ORS Sachets", "quantity": 150, "urgency": "CRITICAL", "fromSurplus": 380 },
+    { "from": "PHC Gudiyatham", "to": "PHC Tambaram", "medicine": "Cotrimoxazole", "quantity": 200, "urgency": "CRITICAL", "fromSurplus": 420 },
+    { "from": "PHC Kanchipuram North", "to": "PHC Arcot", "medicine": "Paracetamol 500mg", "quantity": 400, "urgency": "MEDIUM", "fromSurplus": 900 },
+    { "from": "PHC Gudiyatham", "to": "PHC Walajah", "medicine": "Ringer Lactate IV", "quantity": 30, "urgency": "HIGH", "fromSurplus": 70 }
+  ]
+}

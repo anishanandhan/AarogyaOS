@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SECURITY_HEADERS, getSecurityHeadersArray } from '../../src/lib/security/headers';
+import { SECURITY_HEADERS, getSecurityHeadersArray } from '../../../frontend/src/lib/security/headers';
 
 describe('HTTP Security Headers Standard Checklist Checks', () => {
   it('should define all recommended security headers', () => {

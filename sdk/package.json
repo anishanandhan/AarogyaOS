@@ -1,0 +1,16 @@
+{
+  "name": "@aarogyaos/sdk",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "description": "Lightweight developer client library for AarogyaOS primary health telemetry and multi-agent coordination.",
+  "keywords": [
+    "aarogyaos",
+    "sdk",
+    "healthcare",
+    "gemini",
+    "telemetry"
+  ],
+  "author": "anishanandhan",
+  "license": "MIT"
+}
