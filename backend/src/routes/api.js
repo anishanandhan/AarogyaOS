@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { handleAgentChat, handlePhotoVerification, handleRunAgent } from '../services/geminiService.js';
+import { getDatabaseStatus } from '../config/db.js';
 
 const router = Router();
 
@@ -26,7 +27,8 @@ router.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    service: 'AarogyaOS API Gateway'
+    service: 'AarogyaOS API Gateway',
+    database: getDatabaseStatus()
   });
 });
 
@@ -80,6 +82,8 @@ router.post('/audit', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
 // POST /api/v1/agent/run
 router.post('/agent/run', async (req, res, next) => {
   const { agentRole, districtData } = req.body;
