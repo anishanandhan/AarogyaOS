@@ -18,6 +18,7 @@ import LabsPage from './pages/LabsPage';
 import AgentsPage from './pages/AgentsPage';
 import CommunityImpactPage from './pages/CommunityImpactPage';
 import PublicHealthMapPage from './pages/PublicHealthMapPage';
+import CostAnalyticsPage from './pages/CostAnalyticsPage';
 
 // Protected Route Guard
 function ProtectedRoute({ children }) {
@@ -156,6 +157,16 @@ export default function App() {
             <AshaRoleGuard path="/impact">
               <Layout>
                 <CommunityImpactPage />
+              </Layout>
+            </AshaRoleGuard>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/cost-analytics" element={
+          <ProtectedRoute>
+            <AshaRoleGuard path="/cost-analytics">
+              <Layout>
+                <CostAnalyticsPage />
               </Layout>
             </AshaRoleGuard>
           </ProtectedRoute>

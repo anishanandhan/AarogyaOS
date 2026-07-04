@@ -18,7 +18,8 @@ import {
   Users,
   Languages,
   Hand,
-  Map
+  Map,
+  DollarSign
 } from 'lucide-react';
 import VaaniBot from './VaaniBot';
 import { initializeMediaPipe, GESTURES, getGestureDescription } from '../services/mediapipe';
@@ -125,6 +126,7 @@ export default function Layout({ children }) {
     { path: '/impact', labelKey: 'impact', icon: Users, role: 'ADMIN_STAFF' },
     { path: '/labs', labelKey: 'labAudit', icon: Beaker, role: 'ADMIN_STAFF' },
     { path: '/agents', labelKey: 'adkAgents', icon: Cpu, role: 'ADMIN_STAFF' },
+    { path: '/cost-analytics', labelKey: 'costAnalytics', icon: DollarSign, role: 'ADMIN_STAFF' },
   ];
 
   // Filter items by user role
@@ -150,6 +152,7 @@ export default function Layout({ children }) {
     if (path === '/impact') return 'Community Health Impact';
     if (path === '/labs') return 'LabAudit Diagnostics Matrix';
     if (path === '/agents') return 'ADK Multi-Agent Orchestration';
+    if (path === '/cost-analytics') return 'Cost Analytics & ROI';
     return 'AarogyaOS';
   };
 
