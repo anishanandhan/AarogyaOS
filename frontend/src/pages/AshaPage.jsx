@@ -144,7 +144,7 @@ export default function AshaPage() {
                   <div>
                     <h3 className="font-bold text-sm text-text-primary">{w.name}</h3>
                     <p className="text-[10px] text-text-muted mt-0.5 font-mono">
-                      Village: {w.village} · {w.block} Block
+                      {getTranslation('village', language)}: {w.village} · {w.block} {getTranslation('block', language)}
                     </p>
                   </div>
                   <HealthScoreRing score={w.workerScore} size={48} />
@@ -214,7 +214,7 @@ export default function AshaPage() {
                 <p className="mt-1 font-bold text-text-primary">{b.visits} {getTranslation('visits', language)}</p>
               </div>
               <p className={`text-xs font-bold ${b.coverage < 50 ? 'text-danger' : b.coverage < 80 ? 'text-warning' : 'text-emerald'}`}>
-                {b.coverage}% coverage
+                {b.coverage}% {getTranslation('coverage', language).toLowerCase()}
               </p>
             </div>
           ))}
