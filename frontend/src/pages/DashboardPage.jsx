@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { getTranslation } from '../i18n/translations';
-import { redistributionSuggestions } from '../data/mockData';
 import HealthScoreRing from '../components/HealthScoreRing';
+import CostAnalysisWidget from '../components/CostAnalysisWidget';
 import {
   Sparkles,
   ArrowRight,
@@ -32,10 +32,14 @@ export default function DashboardPage() {
     activeAlerts,
     dismissAlert,
     criticalCount,
-    language
+    language,
+    transfers,
+    approveTransfer
   } = useApp();
   const navigate = useNavigate();
   const [approvedTransfers, setApprovedTransfers] = useState([]);
+  const [envData, setEnvData] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
 
   // Public data loading states
   const [dataSourcesStatus, setDataSourcesStatus] = useState({
@@ -76,9 +80,11 @@ export default function DashboardPage() {
         }));
       }
 
-      // Air Quality
+      // Air Quality & Open-Meteo Environmental Telemetry
       try {
-        await fetchAirQualityData('Vellore');
+        const res = await fetch(`${API_BASE_URL}/telemetry/environmental`);
+        const envJson = await res.json();
+        setEnvData(envJson);
         setDataSourcesStatus(prev => ({
           ...prev,
           aqi: { loading: false, loaded: true, error: null }
@@ -134,9 +140,9 @@ export default function DashboardPage() {
     return 'text-emerald';
   };
 
-  const handleApproveTransfer = (index) => {
-    setApprovedTransfers([...approvedTransfers, index]);
-    // In production: would POST to /api/stock/transfers
+  const handleApproveTransfer = (suggestion) => {
+    approveTransfer(suggestion);
+    setApprovedTransfers([...approvedTransfers, `${suggestion.from}-${suggestion.to}-${suggestion.medicine}`]);
   };
 
   return (
@@ -214,7 +220,7 @@ export default function DashboardPage() {
                   {c.name}{i < flaggedCentres.length - 1 ? ', ' : ''}
                 </span>
               ))}
-              ) require immediate multi-system intervention. We flagged {totalStockouts} medicine shortages and recommended {redistributionSuggestions.length} stock redistribution transfers. Open VaaniBot at bottom-right for custom queries.
+              ) require immediate multi-system intervention. We flagged {totalStockouts} medicine shortages and recommended {transfers.length} stock redistribution transfers. Open VaaniBot at bottom-right for custom queries.
             </p>
           </div>
         </div>
@@ -238,8 +244,8 @@ export default function DashboardPage() {
         
         {/* Horizontal scroll grid */}
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
-          {redistributionSuggestions.map((s, index) => {
-            const isApproved = approvedTransfers.includes(index);
+          {transfers.map((s, index) => {
+            const isApproved = approvedTransfers.includes(`${s.from}-${s.to}-${s.medicine}`);
             return (
               <div
                 key={index}
@@ -275,7 +281,7 @@ export default function DashboardPage() {
 
                 {/* Approve Button */}
                 <button
-                  onClick={() => handleApproveTransfer(index)}
+                  onClick={() => handleApproveTransfer(s)}
                   disabled={isApproved}
                   className={`mt-3 w-full rounded-lg py-2 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                     isApproved
@@ -477,10 +483,17 @@ export default function DashboardPage() {
               )}
               <span className="text-xs font-bold text-text-primary">CPCB</span>
             </div>
-            <p className="text-[10px] text-text-muted">Air Quality</p>
-            <p className="mt-1 text-[9px] text-text-secondary font-mono">
-              {dataSourcesStatus.aqi.loaded ? '✓ AQI: 78 (Moderate)' : 'Loading...'}
+            <p className="text-[10px] text-text-muted">AQI & Live Weather</p>
+            <p className="mt-1 text-[9px] text-text-secondary font-mono leading-relaxed">
+              {dataSourcesStatus.aqi.loaded && envData 
+                ? `✓ AQI: ${envData.airQualityIndex} | ${envData.temperature}°C` 
+                : 'Loading...'}
             </p>
+            {envData && (
+              <p className="text-[8px] text-emerald font-semibold font-mono mt-0.5">
+                Mosquito Risk: {envData.vectorBreedingRisk}%
+              </p>
+            )}
           </div>
 
           {/* IDSP Disease Outbreaks */}
@@ -561,6 +574,9 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* 6. Operational Cost Analysis Widget */}
+      <CostAnalysisWidget language={language} />
 
     </div>
   );
