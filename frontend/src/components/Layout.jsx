@@ -128,18 +128,20 @@ export default function Layout({ children }) {
                 ))}
               </div>
 
-              {/* Alerts Badge */}
-              <Link
-                to="/alerts"
-                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/80 shadow-sm border border-gray-200/50 hover:border-red-300 transition-all group"
-              >
-                <Bell size={16} className="text-gray-600 group-hover:text-red-500 transition-colors" />
-                {criticalCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center shadow-lg shadow-red-500/40 animate-pulse">
-                    {criticalCount}
-                  </span>
-                )}
-              </Link>
+              {/* Alerts Badge - Hidden for ASHA Workers only */}
+              {userRole !== 'ASHA Worker' && (
+                <Link
+                  to="/alerts"
+                  className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white/80 shadow-sm border border-gray-200/50 hover:border-red-300 transition-all group"
+                >
+                  <Bell size={16} className="text-gray-600 group-hover:text-red-500 transition-colors" />
+                  {criticalCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center shadow-lg shadow-red-500/40 animate-pulse">
+                      {criticalCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               {/* Logout */}
               <button

@@ -32,7 +32,8 @@ export default function DashboardPage() {
     criticalCount,
     language,
     transfers,
-    approveTransfer
+    approveTransfer,
+    userRole
   } = useApp();
   const navigate = useNavigate();
   const [approvedTransfers, setApprovedTransfers] = useState([]);
@@ -68,10 +69,16 @@ export default function DashboardPage() {
     setApprovedTransfers([...approvedTransfers, `${suggestion.from}-${suggestion.to}-${suggestion.medicine}`]);
   };
 
+  // Check if user can see WhatsApp feature (only District Admin)
+  const canSeeWhatsApp = userRole === 'District Admin';
+
+  // Check if user can see alerts (not ASHA Worker)
+  const canSeeAlerts = userRole !== 'ASHA Worker';
+
   return (
     <div className="space-y-6">
       {/* AI-Powered Epic Features Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className={`grid grid-cols-1 ${canSeeWhatsApp ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 mb-8`}>
         
         {/* Voice AI Agent Card */}
         <div 
@@ -149,40 +156,42 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* WhatsApp Alerts Card */}
-        <div 
-          onClick={() => navigate('/whatsapp')}
-          className="group cursor-pointer rounded-2xl bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-6 border border-emerald-200/50 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
-        >
-          {/* Cloud Badge */}
-          <div className="absolute top-4 right-4 flex items-center gap-1 bg-emerald-600 text-white px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wide">
-            <Zap size={10} />
-            <span>Cloud API</span>
-          </div>
-          
-          {/* Icon */}
-          <div className="flex items-center justify-center mb-4">
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg">
-              <MessageSquare size={32} strokeWidth={2.5} />
+        {/* WhatsApp Alerts Card - Only for District Admin */}
+        {canSeeWhatsApp && (
+          <div
+            onClick={() => navigate('/whatsapp')}
+            className="group cursor-pointer rounded-2xl bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-6 border border-emerald-200/50 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+          >
+            {/* Cloud Badge */}
+            <div className="absolute top-4 right-4 flex items-center gap-1 bg-emerald-600 text-white px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wide">
+              <Zap size={10} />
+              <span>Cloud API</span>
+            </div>
+
+            {/* Icon */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg">
+                <MessageSquare size={32} strokeWidth={2.5} />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-lg font-extrabold text-slate-900 text-center mb-2 tracking-tight">
+              WhatsApp Alert System
+            </h3>
+
+            {/* Description */}
+            <p className="text-xs text-slate-600 text-center font-medium leading-relaxed">
+              Automated bulk notification system reaching 1000+ healthcare workers via WhatsApp Business API
+            </p>
+
+            {/* Tech Stack Indicator */}
+            <div className="mt-4 pt-3 border-t border-emerald-200/50 flex items-center justify-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
+              <Sparkles size={10} />
+              <span>WhatsApp Business API</span>
             </div>
           </div>
-          
-          {/* Title */}
-          <h3 className="text-lg font-extrabold text-slate-900 text-center mb-2 tracking-tight">
-            WhatsApp Alert System
-          </h3>
-          
-          {/* Description */}
-          <p className="text-xs text-slate-600 text-center font-medium leading-relaxed">
-            Automated bulk notification system reaching 1000+ healthcare workers via WhatsApp Business API
-          </p>
-          
-          {/* Tech Stack Indicator */}
-          <div className="mt-4 pt-3 border-t border-emerald-200/50 flex items-center justify-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
-            <Sparkles size={10} />
-            <span>WhatsApp Business API</span>
-          </div>
-        </div>
+        )}
 
       </div>
 
@@ -418,54 +427,56 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 5. Recent Alerts Panel */}
-      <div className="rounded-xl border border-border-col bg-surface p-5 animate-card" style={{ animationDelay: '400ms' }}>
-        <div className="flex items-center justify-between border-b border-border-col pb-3">
-          <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
-            <AlertCircle size={14} className="text-danger" />
-            <span>{getTranslation('telemetryAlertsFeed', language)}</span>
-          </h2>
-          <button 
-            onClick={() => navigate('/alerts')} 
-            className="text-[10px] font-semibold text-emerald hover:underline"
-          >
-            {getTranslation('allWarnings', language)} ({activeAlerts.length})
-          </button>
-        </div>
+      {/* 5. Recent Alerts Panel - Hidden for ASHA Workers */}
+      {canSeeAlerts && (
+        <div className="rounded-xl border border-border-col bg-surface p-5 animate-card" style={{ animationDelay: '400ms' }}>
+          <div className="flex items-center justify-between border-b border-border-col pb-3">
+            <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+              <AlertCircle size={14} className="text-danger" />
+              <span>{getTranslation('telemetryAlertsFeed', language)}</span>
+            </h2>
+            <button
+              onClick={() => navigate('/alerts')}
+              className="text-[10px] font-semibold text-emerald hover:underline"
+            >
+              {getTranslation('allWarnings', language)} ({activeAlerts.length})
+            </button>
+          </div>
 
-        <div className="mt-4 divide-y divide-border-col/50">
-          {activeAlerts.slice(0, 4).map((alert) => (
-            <div key={alert.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`rounded px-1.5 py-0.5 text-[8px] font-bold ${
-                    alert.severity === 'CRITICAL' ? 'bg-danger/20 text-danger border border-danger/30' : 'bg-warning/20 text-warning border border-warning/30'
-                  }`}>
-                    {alert.severity}
-                  </span>
-                  <span className="text-xs font-bold text-text-primary font-mono">{alert.centreName}</span>
-                  <span className="text-[9px] text-text-muted font-mono">
-                    {new Date(alert.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </span>
+          <div className="mt-4 divide-y divide-border-col/50">
+            {activeAlerts.slice(0, 4).map((alert) => (
+              <div key={alert.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded px-1.5 py-0.5 text-[8px] font-bold ${
+                      alert.severity === 'CRITICAL' ? 'bg-danger/20 text-danger border border-danger/30' : 'bg-warning/20 text-warning border border-warning/30'
+                    }`}>
+                      {alert.severity}
+                    </span>
+                    <span className="text-xs font-bold text-text-primary font-mono">{alert.centreName}</span>
+                    <span className="text-[9px] text-text-muted font-mono">
+                      {new Date(alert.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-text-secondary leading-relaxed font-sans">{alert.message}</p>
                 </div>
-                <p className="mt-1 text-xs text-text-secondary leading-relaxed font-sans">{alert.message}</p>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => dismissAlert(alert.id)}
+                    className="rounded border border-border-col bg-navy px-2.5 py-1 text-[10px] font-semibold text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all cursor-pointer"
+                  >
+                    {getTranslation('dismiss', language)}
+                  </button>
+                </div>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => dismissAlert(alert.id)}
-                  className="rounded border border-border-col bg-navy px-2.5 py-1 text-[10px] font-semibold text-text-secondary hover:bg-white/5 hover:text-text-primary transition-all cursor-pointer"
-                >
-                  {getTranslation('dismiss', language)}
-                </button>
-              </div>
-            </div>
-          ))}
-          {activeAlerts.length === 0 && (
-            <p className="py-4 text-center text-xs text-text-muted font-mono">{getTranslation('noActiveWarnings', language)}</p>
-          )}
+            ))}
+            {activeAlerts.length === 0 && (
+              <p className="py-4 text-center text-xs text-text-muted font-mono">{getTranslation('noActiveWarnings', language)}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
 
     </div>
