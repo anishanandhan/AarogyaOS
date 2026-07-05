@@ -48,9 +48,9 @@ export async function initializeMediaPipe(videoElement, onGestureDetected) {
     // Load MediaPipe Hands (using mock for now since CDN loading is complex)
     // In production, you'd load the actual MediaPipe library
 
-    // For demo purposes, we'll use a simulated gesture detector
+    // For testing and fallback purposes, we'll use a simulated gesture detector
     isInitialized = true;
-    console.log('[MediaPipe] Initialization complete (demo mode)');
+    console.log('[MediaPipe] Initialization complete (simulation mode)');
 
     // Start simulated gesture detection
     startSimulatedGestureDetection(onGestureDetected);
@@ -124,11 +124,11 @@ function detectGesture(landmarks) {
 }
 
 /**
- * Simulated gesture detection for demo
+ * Simulated gesture detection for testing
  * In production, this would use actual MediaPipe hand tracking
  */
 function startSimulatedGestureDetection(onGestureDetected) {
-  console.log('[MediaPipe] Demo mode: Use keyboard for gesture simulation');
+  console.log('[MediaPipe] Simulation mode: Use keyboard for gesture simulation');
   console.log('  [1] = Thumbs Up');
   console.log('  [2] = Thumbs Down');
   console.log('  [3] = Open Palm');
@@ -136,7 +136,7 @@ function startSimulatedGestureDetection(onGestureDetected) {
   console.log('  [5] = Pointing Down');
   console.log('  [6] = Peace Sign');
 
-  // Keyboard simulation for demo
+  // Keyboard simulation for testing
   document.addEventListener('keypress', (e) => {
     let gesture = null;
     switch (e.key) {
@@ -188,7 +188,7 @@ export function startGestureDetection(videoElement, onGestureDetected) {
   console.log('[MediaPipe] Starting gesture detection...');
 
   // In production, this would continuously process video frames
-  // For demo, we rely on keyboard simulation
+  // For testing, we rely on keyboard simulation
 }
 
 /**

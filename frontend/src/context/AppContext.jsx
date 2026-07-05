@@ -30,7 +30,7 @@ export function AppProvider({ children }) {
   const [labs, setLabs] = useState(initialLabAvailability);
   const [transfers, setTransfers] = useState(initialTransfers);
 
-  // Sync role to localStorage to survive reload during test/demo
+  // Sync role to localStorage to survive reload during testing
   useEffect(() => {
     if (userRole) {
       localStorage.setItem('smart_health_role', userRole);
@@ -59,14 +59,14 @@ export function AppProvider({ children }) {
           fetch(`${API_BASE_URL}/telemetry/transfers`).then(r => r.json())
         ]);
         
-        setCentres(resCentres);
-        setStock(resStock);
-        setAttendance(resAttendance);
-        setAsha(resAsha);
-        setVisits(resVisits);
-        setLabs(resLabs);
-        setAlerts(resAlerts);
-        setTransfers(resTransfers);
+        if (Array.isArray(resCentres)) setCentres(resCentres);
+        if (resStock && typeof resStock === 'object' && !Array.isArray(resStock)) setStock(resStock);
+        if (Array.isArray(resAttendance)) setAttendance(resAttendance);
+        if (Array.isArray(resAsha)) setAsha(resAsha);
+        if (Array.isArray(resVisits)) setVisits(resVisits);
+        if (resLabs && typeof resLabs === 'object' && !Array.isArray(resLabs)) setLabs(resLabs);
+        if (Array.isArray(resAlerts)) setAlerts(resAlerts);
+        if (Array.isArray(resTransfers)) setTransfers(resTransfers);
       } catch (err) {
         console.error('[AppContext] Failed to fetch telemetry from server, using local fallbacks:', err);
       }

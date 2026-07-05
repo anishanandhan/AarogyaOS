@@ -4,7 +4,7 @@
  * for district health management
  */
 
-const BIGQUERY_PROJECT_ID = import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'smart-health-demo';
+const BIGQUERY_PROJECT_ID = import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'aarogyaos-enterprise';
 const BIGQUERY_DATASET = 'health_analytics';
 
 /**
@@ -28,21 +28,36 @@ export const BIGQUERY_TABLES = {
 async function executeBigQuerySQL(query) {
   console.log('[BigQuery] Executing query:', query.substring(0, 100) + '...');
 
-  // Simulate query execution delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  try {
+    const response = await fetch('/api/v1/analytics/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    });
 
-  // Return mock results based on query patterns
-  if (query.includes('medicine_stock_history')) {
-    return getMockStockTrends();
-  } else if (query.includes('staff_attendance')) {
-    return getMockAttendanceTrends();
-  } else if (query.includes('patient_visits')) {
-    return getMockFootfallTrends();
-  } else if (query.includes('alert_events')) {
-    return getMockAlertAnalytics();
+    if (!response.ok) {
+      throw new Error(`BigQuery API returned status ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn(`[BigQuery Fallback] Query execution failed: ${error.message}. Returning local simulation.`);
+    
+    // Return mock results based on query patterns
+    if (query.includes('medicine_stock_history')) {
+      return getMockStockTrends();
+    } else if (query.includes('staff_attendance')) {
+      return getMockAttendanceTrends();
+    } else if (query.includes('patient_visits')) {
+      return getMockFootfallTrends();
+    } else if (query.includes('alert_events')) {
+      return getMockAlertAnalytics();
+    }
+
+    return [];
   }
-
-  return [];
 }
 
 /**

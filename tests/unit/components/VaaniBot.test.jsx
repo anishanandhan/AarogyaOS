@@ -22,26 +22,26 @@ vi.mock('../../../frontend/src/services/gemini', () => ({
 describe('VaaniBot Component and Accessibility Tests', () => {
   it('should render the chat trigger button on mount', () => {
     render(<VaaniBot />);
-    const button = screen.getByTitle('Ask VaaniBot');
+    const button = screen.getByTitle(/Ask VaaniBot/);
     expect(button).toBeInTheDocument();
   });
 
   it('should open the chat drawer when clicked', () => {
     render(<VaaniBot />);
-    const trigger = screen.getByTitle('Ask VaaniBot');
+    const trigger = screen.getByTitle(/Ask VaaniBot/);
     fireEvent.click(trigger);
     
     expect(screen.getByText('VaaniBot')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Ask a question...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Use voice or type/)).toBeInTheDocument();
   });
 
   it('should submit query and render response', async () => {
     render(<VaaniBot />);
     // Open drawer
-    fireEvent.click(screen.getByTitle('Ask VaaniBot'));
+    fireEvent.click(screen.getByTitle(/Ask VaaniBot/));
     
     // Type query
-    const input = screen.getByPlaceholderText('Ask a question...');
+    const input = screen.getByPlaceholderText(/Use voice or type/);
     fireEvent.change(input, { target: { value: 'How is Walajah PHC?' } });
     
     // Send

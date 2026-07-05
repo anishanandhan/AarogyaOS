@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { getTranslation } from '../i18n/translations';
 import HealthScoreRing from '../components/HealthScoreRing';
-import { verifyVisitPhoto } from '../services/gemini';
+import { verifyVisitPhoto, analyzeMedicalTriage } from '../services/gemini';
 import { translateText } from '../services/cloudTranslation';
 import {
   Heart,
@@ -14,7 +14,9 @@ import {
   CheckCircle,
   HelpCircle,
   FileSpreadsheet,
-  XCircle
+  XCircle,
+  Stethoscope,
+  Activity
 } from 'lucide-react';
 
 export default function AshaPage() {
@@ -29,10 +31,21 @@ export default function AshaPage() {
   const [imageFile, setImageFile] = useState(null);
   const [base64Image, setBase64Image] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
-  
+
   // Results modal state
   const [verificationResult, setVerificationResult] = useState(null);
   const [translatedReason, setTranslatedReason] = useState('');
+
+  // Medical Triage Assistant state
+  const [showTriageModal, setShowTriageModal] = useState(false);
+  const [triageImageFile, setTriageImageFile] = useState(null);
+  const [triageBase64Image, setTriageBase64Image] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [patientAge, setPatientAge] = useState('');
+  const [symptoms, setSymptoms] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [triageResult, setTriageResult] = useState(null);
+  const [translatedTriageAction, setTranslatedTriageAction] = useState('');
 
   // Section 2: Block coverage aggregation
   const blocks = [
@@ -111,6 +124,66 @@ export default function AshaPage() {
     setImageFile(null);
   };
 
+  // Handle triage image conversion to base64
+  const handleTriageImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setTriageImageFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result.split(',')[1];
+      setTriageBase64Image(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleTriageSubmit = async (e) => {
+    e.preventDefault();
+    if (!triageBase64Image) {
+      alert("Please upload a patient symptom photo.");
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    try {
+      const patientInfo = {
+        name: patientName || 'Unknown',
+        age: patientAge || 'Unknown',
+        symptoms: symptoms || 'Not specified',
+        location: 'Rural health center'
+      };
+
+      const result = await analyzeMedicalTriage(triageBase64Image, patientInfo);
+      setTriageResult(result);
+
+      // Translate the action recommendation if not in English
+      if (language !== 'en' && result.action) {
+        const translated = await translateText(result.action, language, 'en');
+        setTranslatedTriageAction(translated);
+      } else {
+        setTranslatedTriageAction(result.action);
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Medical triage analysis failed.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const closeTriageModals = () => {
+    setShowTriageModal(false);
+    setTriageResult(null);
+    setTriageBase64Image('');
+    setTriageImageFile(null);
+    setPatientName('');
+    setPatientAge('');
+    setSymptoms('');
+  };
+
   return (
     <div className="space-y-8">
       
@@ -121,13 +194,22 @@ export default function AshaPage() {
             <Heart size={14} className="text-danger" />
             <span>{getTranslation('ashaWorkerRegistryPerformance', language)}</span>
           </h2>
-          <button
-            onClick={() => setShowUploadModal(true)}
-            className="flex items-center gap-1 rounded bg-emerald text-navy px-3 py-1.5 text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <Camera size={14} />
-            <span>{getTranslation('verifyVisitPhoto', language)}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowTriageModal(true)}
+              className="flex items-center gap-1 rounded bg-blue-500 text-white px-3 py-1.5 text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <Stethoscope size={14} />
+              <span>Medical Triage</span>
+            </button>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex items-center gap-1 rounded bg-emerald text-navy px-3 py-1.5 text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <Camera size={14} />
+              <span>{getTranslation('verifyVisitPhoto', language)}</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -439,7 +521,7 @@ export default function AshaPage() {
               <div className="flex items-center justify-between">
                 <span>{getTranslation('verificationStatus', language)}:</span>
                 <span className={`rounded-full px-2.5 py-0.5 font-bold ${
-                  verificationResult.status === 'VERIFIED' ? 'bg-emerald text-navy' : 
+                  verificationResult.status === 'VERIFIED' ? 'bg-emerald text-navy' :
                   verificationResult.status === 'SUSPICIOUS' ? 'bg-warning text-navy animate-pulse' : 'bg-white/10 text-text-muted'
                 }`}>
                   {verificationResult.status}
@@ -464,6 +546,194 @@ export default function AshaPage() {
                   className="rounded bg-emerald text-navy px-5 py-1.5 font-sans font-bold hover:scale-105 transition-all cursor-pointer"
                 >
                   {getTranslation('done', language)}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: MEDICAL TRIAGE ASSISTANT FORM */}
+      {showTriageModal && !triageResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-xl border border-border-col bg-surface p-6 shadow-2xl animate-card">
+            <div className="flex items-center justify-between border-b border-border-col pb-3">
+              <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                <Stethoscope size={14} className="text-blue-500" />
+                <span>AI Medical Triage Assistant</span>
+              </h3>
+              <button onClick={closeTriageModals} className="text-text-muted hover:text-white">
+                <XCircle size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleTriageSubmit} className="mt-4 space-y-4 font-mono text-xs">
+              <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-3">
+                <p className="text-[10px] text-blue-400 leading-relaxed font-sans">
+                  <Activity size={12} className="inline mr-1" />
+                  Upload a photo of patient symptoms (wounds, rashes, swelling, etc.) for AI-powered severity assessment and triage recommendations.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-text-secondary mb-1 font-sans">Patient Name</label>
+                  <input
+                    type="text"
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                    placeholder="Optional"
+                    className="w-full rounded border border-border-col bg-navy px-3 py-2 text-text-primary outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-text-secondary mb-1 font-sans">Age</label>
+                  <input
+                    type="text"
+                    value={patientAge}
+                    onChange={(e) => setPatientAge(e.target.value)}
+                    placeholder="Optional"
+                    className="w-full rounded border border-border-col bg-navy px-3 py-2 text-text-primary outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-text-secondary mb-1 font-sans">Reported Symptoms</label>
+                <textarea
+                  value={symptoms}
+                  onChange={(e) => setSymptoms(e.target.value)}
+                  rows={2}
+                  placeholder="e.g., fever, rash, swelling..."
+                  className="w-full rounded border border-border-col bg-navy px-3 py-2 text-text-primary outline-none focus:border-blue-500"
+                />
+              </div>
+
+              {/* Photo Upload */}
+              <div>
+                <label className="block text-text-secondary mb-1.5 font-sans">Upload Symptom Photo</label>
+                <div className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-blue-500/50 bg-navy/30 py-5 px-4 text-center hover:bg-navy/50 transition-colors">
+                  <UploadCloud size={24} className="text-blue-400 mb-2" />
+                  <span className="text-[10px] text-text-secondary mb-1">JPEG or PNG format</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    required
+                    onChange={handleTriageImageChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  {triageImageFile && (
+                    <span className="text-[10px] text-blue-400 font-bold truncate mt-1">
+                      File: {triageImageFile.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-border-col/40">
+                <button
+                  type="button"
+                  onClick={closeTriageModals}
+                  className="rounded border border-border-col px-3.5 py-1.5 font-sans font-bold text-text-secondary hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAnalyzing}
+                  className="rounded bg-blue-500 text-white px-4 py-1.5 font-sans font-bold hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span>Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Stethoscope size={12} />
+                      <span>Analyze Symptoms</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: TRIAGE RESULTS PANEL */}
+      {triageResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 backdrop-blur-sm p-4 font-mono">
+          <div className="w-full max-w-md rounded-xl border border-border-col bg-surface p-6 shadow-2xl animate-card">
+            <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider border-b border-border-col pb-3 flex items-center gap-1.5">
+              <Stethoscope size={14} className="text-blue-500" />
+              <span>Medical Triage Assessment</span>
+            </h3>
+
+            <div className="mt-4 space-y-4 text-xs">
+              <div className="flex items-center justify-between">
+                <span>Severity Level:</span>
+                <span className={`rounded-full px-2.5 py-0.5 font-bold ${
+                  triageResult.severity === 'URGENT' ? 'bg-red-500 text-white animate-pulse' :
+                  triageResult.severity === 'MODERATE' ? 'bg-yellow-500 text-navy' : 'bg-green-500 text-navy'
+                }`}>
+                  {triageResult.severity}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span>Confidence:</span>
+                <span className="font-bold text-text-primary">{triageResult.confidence}%</span>
+              </div>
+
+              <div className="rounded-lg bg-navy/60 p-3 border border-border-col/40 space-y-2">
+                <div>
+                  <span className="text-[8px] text-text-muted font-sans font-semibold uppercase">Condition Assessment</span>
+                  <p className="text-[11px] text-text-primary leading-relaxed font-sans mt-1">
+                    {triageResult.condition}
+                  </p>
+                </div>
+
+                {triageResult.symptoms && triageResult.symptoms.length > 0 && (
+                  <div>
+                    <span className="text-[8px] text-text-muted font-sans font-semibold uppercase">Detected Symptoms</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {triageResult.symptoms.map((symptom, idx) => (
+                        <span key={idx} className="text-[9px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                          {symptom}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className={`rounded-lg p-3 border ${
+                triageResult.severity === 'URGENT' ? 'bg-red-500/10 border-red-500/40' :
+                triageResult.severity === 'MODERATE' ? 'bg-yellow-500/10 border-yellow-500/40' :
+                'bg-green-500/10 border-green-500/40'
+              }`}>
+                <span className="text-[8px] text-text-muted font-sans font-semibold uppercase">Recommended Action</span>
+                <p className="text-[11px] text-text-secondary leading-relaxed font-sans mt-1">
+                  {translatedTriageAction || triageResult.action}
+                </p>
+              </div>
+
+              {triageResult.reasoning && (
+                <div className="rounded-lg bg-navy/40 p-3 border border-border-col/20">
+                  <span className="text-[8px] text-text-muted font-sans font-semibold uppercase">Clinical Reasoning</span>
+                  <p className="text-[10px] text-text-secondary leading-relaxed font-sans mt-1 italic">
+                    {triageResult.reasoning}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end pt-3 border-t border-border-col/40">
+                <button
+                  onClick={closeTriageModals}
+                  className="rounded bg-blue-500 text-white px-5 py-1.5 font-sans font-bold hover:scale-105 transition-all cursor-pointer"
+                >
+                  Done
                 </button>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { getTranslation } from '../i18n/translations';
 import {
@@ -11,8 +11,83 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { Activity, Bed, TrendingUp, ChevronRight, Brain, Loader2, BarChart3, CheckCircle } from 'lucide-react';
+import { Activity, Bed, TrendingUp, Brain, Loader2, BarChart3, CheckCircle } from 'lucide-react';
 import { predictPatientFootfall } from '../services/bigquery';
+
+const localTranslations = {
+  en: {
+    capacityCheck: "District Footfall & Capacity Check",
+    trendSubtitle: "OPD & IPD 7-Day Trend (early prediction warnings)",
+    surgeRisk: "SURGE RISK",
+    surgeDetected: "Surge Detected",
+    nominalTraffic: "Nominal Patient Traffic",
+    todaysTraffic: "Today's Traffic",
+    patients: "patients",
+    avgTraffic: "6-Day Average Traffic",
+    patientsPerDay: "patients/day",
+    forecastHeader: "BigQuery ML Footfall Forecast",
+    predicting: "Predicting...",
+    predictButton: "Predict Next 7 Days",
+    model: "Model",
+    timeSeriesML: "Time-series ML",
+    avgDailyFootfall: "Avg Footfall",
+    sevenDayForecast: "7-Day Forecast (ARIMA Model)",
+    peak: "PEAK",
+    aiRecommendations: "AI Recommendations",
+    clickPredict: "Click \"Predict Next 7 Days\" to run BigQuery ML forecast",
+    usesArima: "Uses ARIMA_PLUS time-series model with 95% confidence",
+    trend: "Trend",
+    weekAhead: "Week ahead"
+  },
+  hi: {
+    capacityCheck: "जिला फुटफॉल और क्षमता जांच",
+    trendSubtitle: "ओपीडी और आईपीडी 7-दिवसीय प्रवृत्ति (प्रारंभिक भविष्यवाणी चेतावनी)",
+    surgeRisk: "भीड़ का जोखिम",
+    surgeDetected: "सर्ज का पता चला",
+    nominalTraffic: "सामान्य मरीज संख्या",
+    todaysTraffic: "आज की मरीज संख्या",
+    patients: "मरीज",
+    avgTraffic: "6-दिवसीय औसत मरीज संख्या",
+    patientsPerDay: "मरीज/दिन",
+    forecastHeader: "बिगक्वेरी एमएल फुटफॉल पूर्वानुमान",
+    predicting: "पूर्वानुमान जारी...",
+    predictButton: "अगले 7 दिनों का पूर्वानुमान लगाएं",
+    model: "मॉडल",
+    timeSeriesML: "टाइम-सीरीज एमएल",
+    avgDailyFootfall: "औसत फुटफॉल",
+    sevenDayForecast: "7-दिवसीय पूर्वानुमान (एआरआईएमए मॉडल)",
+    peak: "शिखर",
+    aiRecommendations: "एआई सिफारिशें",
+    clickPredict: "बिगक्वेरी एमएल पूर्वानुमान चलाने के लिए \"अगले 7 दिनों का पूर्वानुमान लगाएं\" पर क्लिक करें",
+    usesArima: "95% आत्मविश्वास के साथ ARIMA_PLUS समय-श्रृंखला मॉडल का उपयोग करता है",
+    trend: "प्रवृत्ति",
+    weekAhead: "आगे का सप्ताह"
+  },
+  ta: {
+    capacityCheck: "மாவட்ட மக்கள் வருகை & திறன் சரிபார்ப்பு",
+    trendSubtitle: "OPD & IPD 7-நாள் போக்கு (ஆரம்ப கணிப்பு எச்சரிக்கைகள்)",
+    surgeRisk: "அதிகரிப்பு அபாயம்",
+    surgeDetected: "அதிகரிப்பு கண்டறியப்பட்டது",
+    nominalTraffic: "சாதாரண நோயாளிகளின் எண்ணிக்கை",
+    todaysTraffic: "இன்றைய நோயாளி எண்ணிக்கை",
+    patients: "நோயாளிகள்",
+    avgTraffic: "6-நாள் சராசரி நோயாளி எண்ணிக்கை",
+    patientsPerDay: "நோயாளிகள்/நாள்",
+    forecastHeader: "BigQuery ML மக்கள் வருகை கணிப்பு",
+    predicting: "கணிக்கிறது...",
+    predictButton: "அடுத்த 7 நாட்களைக் கணித்திடுக",
+    model: "மாதிரி",
+    timeSeriesML: "நேரத் தொடர் ML",
+    avgDailyFootfall: "சராசரி வருகை",
+    sevenDayForecast: "7-நாள் கணிப்பு (ARIMA மாதிரி)",
+    peak: "உச்சம்",
+    aiRecommendations: "AI பரிந்துரைகள்",
+    clickPredict: "BigQuery ML கணிப்பை இயக்க \"அடுத்த 7 நாட்களைக் கணித்திடுக\" என்பதைக் கிளிக் செய்யவும்",
+    usesArima: "95% நம்பிக்கையுடன் ARIMA_PLUS நேரத் தொடர் மாதிரியைப் பயன்படுத்துகிறது",
+    trend: "போக்கு",
+    weekAhead: "அடுத்த வாரம்"
+  }
+};
 
 export default function FootfallPage() {
   const { centres, language } = useApp();
@@ -20,7 +95,8 @@ export default function FootfallPage() {
   const [prediction, setPrediction] = useState(null);
   const [isPredicting, setIsPredicting] = useState(false);
 
-  // Run BigQuery ML prediction
+  const t = localTranslations[language] || localTranslations.en;
+
   const handlePredict = async () => {
     setIsPredicting(true);
     try {
@@ -34,7 +110,6 @@ export default function FootfallPage() {
     }
   };
 
-  // Footfall data generator (with defaults for unseeded centres)
   const getFootfallSeries = (cId) => {
     const rawData = {
       "phc-001": [
@@ -68,7 +143,6 @@ export default function FootfallPage() {
 
     if (rawData[cId]) return rawData[cId];
 
-    // Seed deterministic values based on name length to avoid rendering empty lines
     const seed = cId.charCodeAt(cId.length - 1) || 5;
     return [
       { date: "Jun 25", opd: 50 + seed * 2, ipd: 2 },
@@ -81,7 +155,6 @@ export default function FootfallPage() {
     ];
   };
 
-  // Evaluate if OPD is > 20% of previous 6 days running average
   const checkSurge = (series) => {
     if (series.length < 7) return false;
     const today = series[series.length - 1].opd;
@@ -105,14 +178,13 @@ export default function FootfallPage() {
   return (
     <div className="space-y-6">
       
-      {/* Split Panels */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-10">
         
-        {/* Left Side: Centres Checklist Grid (40% width) */}
+        {/* Left Side: Centres Checklist Grid */}
         <div className="rounded-xl border border-border-col bg-surface p-5 lg:col-span-4 space-y-4 animate-card" style={{ animationDelay: '0ms' }}>
           <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5 border-b border-border-col/40 pb-3">
             <Activity size={14} className="text-emerald" />
-            <span>{getTranslation('districtFootfallCapacityCheck', language)}</span>
+            <span>{t.capacityCheck}</span>
           </h2>
 
           <div className="space-y-3 overflow-y-auto max-h-[500px] pr-1">
@@ -141,7 +213,7 @@ export default function FootfallPage() {
                       <span className="text-xs font-bold text-text-primary">{todayVal} OPD</span>
                       {isSurging && (
                         <span className="rounded bg-warning/20 text-warning border border-warning/30 px-1 py-0.5 text-[8px] font-bold animate-pulse">
-                          {getTranslation('surgeRisk', language)}
+                          {t.surgeRisk}
                         </span>
                       )}
                     </div>
@@ -171,7 +243,7 @@ export default function FootfallPage() {
           </div>
         </div>
 
-        {/* Right Side: Recharts details (60% width) */}
+        {/* Right Side: Recharts details */}
         <div className="rounded-xl border border-border-col bg-surface p-5 lg:col-span-6 flex flex-col justify-between animate-card" style={{ animationDelay: '100ms' }}>
           <div>
             <div className="flex items-start justify-between border-b border-border-col/40 pb-3">
@@ -183,36 +255,33 @@ export default function FootfallPage() {
                   </span>
                 </div>
                 <p className="text-[10px] text-text-muted mt-1 font-mono">
-                  OPD & IPD 7-Day Trend (early prediction warnings)
+                  {t.trendSubtitle}
                 </p>
               </div>
 
-              {/* Status flag */}
               {getSurgeInfo(selectedCentreId).isSurging ? (
                 <div className="flex items-center gap-1 rounded-lg border border-warning/30 bg-warning/5 px-3 py-1.5 text-xs text-warning font-mono">
                   <TrendingUp size={14} />
-                  <span>{getTranslation('surgeDetected', language)}: +{Math.round((getSurgeInfo(selectedCentreId).todayVal / getSurgeInfo(selectedCentreId).avgVal - 1) * 100)}%</span>
+                  <span>{t.surgeDetected}: +{Math.round((getSurgeInfo(selectedCentreId).todayVal / getSurgeInfo(selectedCentreId).avgVal - 1) * 100)}%</span>
                 </div>
               ) : (
                 <div className="rounded-lg border border-emerald/20 bg-emerald/5 px-3 py-1.5 text-xs text-emerald font-mono">
-                  <span>{getTranslation('nominalPatientTraffic', language)}</span>
+                  <span>{t.nominalTraffic}</span>
                 </div>
               )}
             </div>
 
-            {/* Analysis details */}
             <div className="my-5 grid grid-cols-2 gap-4 rounded-lg bg-navy/40 p-3.5 border border-border-col/35 font-mono text-xs">
               <div>
-                <span className="text-[9px] text-text-muted font-sans uppercase">{getTranslation('todaysTraffic', language)}</span>
-                <p className="font-bold text-text-primary mt-0.5">{getSurgeInfo(selectedCentreId).todayVal} {getTranslation('patients', language)}</p>
+                <span className="text-[9px] text-text-muted font-sans uppercase">{t.todaysTraffic}</span>
+                <p className="font-bold text-text-primary mt-0.5">{getSurgeInfo(selectedCentreId).todayVal} {t.patients}</p>
               </div>
               <div>
-                <span className="text-[9px] text-text-muted font-sans uppercase">{getTranslation('sixDayAverageTraffic', language)}</span>
-                <p className="font-bold text-text-secondary mt-0.5">{getSurgeInfo(selectedCentreId).avgVal} {getTranslation('patientsPerDay', language)}</p>
+                <span className="text-[9px] text-text-muted font-sans uppercase">{t.avgTraffic}</span>
+                <p className="font-bold text-text-secondary mt-0.5">{getSurgeInfo(selectedCentreId).avgVal} {t.patientsPerDay}</p>
               </div>
             </div>
 
-            {/* Chart */}
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartSeries} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
@@ -248,11 +317,11 @@ export default function FootfallPage() {
         </div>
 
         {/* BigQuery ML Prediction Panel */}
-        <div className="rounded-xl border border-border-col bg-surface p-5 animate-card" style={{ animationDelay: '100ms' }}>
+        <div className="rounded-xl border border-border-col bg-surface p-5 lg:col-span-10 lg:mt-6 animate-card" style={{ animationDelay: '100ms' }}>
           <div className="flex items-center justify-between border-b border-border-col pb-3">
             <div className="flex items-center gap-2">
               <Brain size={16} className="text-info" />
-              <h2 className="text-sm font-bold text-text-primary">BigQuery ML Footfall Forecast</h2>
+              <h2 className="text-sm font-bold text-text-primary">{t.forecastHeader}</h2>
             </div>
             <button
               onClick={handlePredict}
@@ -262,12 +331,12 @@ export default function FootfallPage() {
               {isPredicting ? (
                 <>
                   <Loader2 size={12} className="animate-spin" />
-                  <span>Predicting...</span>
+                  <span>{t.predicting}</span>
                 </>
               ) : (
                 <>
                   <BarChart3 size={12} />
-                  <span>Predict Next 7 Days</span>
+                  <span>{t.predictButton}</span>
                 </>
               )}
             </button>
@@ -275,56 +344,55 @@ export default function FootfallPage() {
 
           {prediction ? (
             <div className="mt-4 space-y-4">
-              {/* Prediction Summary */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border border-border-col bg-navy/30 p-3">
+                <div className="rounded-lg border border-border-col bg-navy/30 p-3 font-mono">
                   <div className="flex items-center gap-2 mb-1">
                     <CheckCircle size={14} className="text-emerald" />
-                    <span className="text-[10px] font-semibold text-text-muted uppercase">Model</span>
+                    <span className="text-[10px] font-semibold text-text-muted uppercase font-sans">{t.model}</span>
                   </div>
-                  <p className="text-xs font-bold text-text-primary font-mono">{prediction.model}</p>
-                  <p className="text-[9px] text-text-secondary mt-0.5">Time-series ML</p>
+                  <p className="text-xs font-bold text-text-primary">{prediction.model}</p>
+                  <p className="text-[9px] text-text-secondary mt-0.5 font-sans">{t.timeSeriesML}</p>
                 </div>
 
-                <div className="rounded-lg border border-border-col bg-navy/30 p-3">
+                <div className="rounded-lg border border-border-col bg-navy/30 p-3 font-mono">
                   <div className="flex items-center gap-2 mb-1">
                     <Activity size={14} className="text-info" />
-                    <span className="text-[10px] font-semibold text-text-muted uppercase">Avg Footfall</span>
+                    <span className="text-[10px] font-semibold text-text-muted uppercase font-sans">{t.avgDailyFootfall}</span>
                   </div>
-                  <p className="text-xs font-bold text-text-primary font-mono">{prediction.insights.averageDailyFootfall} patients/day</p>
-                  <p className="text-[9px] text-text-secondary mt-0.5">7-day forecast</p>
+                  <p className="text-xs font-bold text-text-primary">{prediction.insights.averageDailyFootfall} {t.patients}</p>
+                  <p className="text-[9px] text-text-secondary mt-0.5 font-sans">{t.sevenDayForecast}</p>
                 </div>
 
-                <div className="rounded-lg border border-border-col bg-navy/30 p-3">
+                <div className="rounded-lg border border-border-col bg-navy/30 p-3 font-mono">
                   <div className="flex items-center gap-2 mb-1">
                     <TrendingUp size={14} className={prediction.insights.trend === 'INCREASING' ? 'text-warning' : 'text-emerald'} />
-                    <span className="text-[10px] font-semibold text-text-muted uppercase">Trend</span>
+                    <span className="text-[10px] font-semibold text-text-muted uppercase font-sans">{t.trend}</span>
                   </div>
-                  <p className={`text-xs font-bold font-mono ${prediction.insights.trend === 'INCREASING' ? 'text-warning' : 'text-emerald'}`}>
+                  <p className={`text-xs font-bold ${prediction.insights.trend === 'INCREASING' ? 'text-warning' : 'text-emerald'}`}>
                     {prediction.insights.trend}
                   </p>
-                  <p className="text-[9px] text-text-secondary mt-0.5">Week ahead</p>
+                  <p className="text-[9px] text-text-secondary mt-0.5 font-sans">{t.weekAhead}</p>
                 </div>
               </div>
 
               {/* Daily Predictions */}
-              <div className="rounded-lg border border-border-col bg-navy/20 p-4">
-                <h3 className="text-xs font-bold text-text-primary mb-3 flex items-center gap-2">
+              <div className="rounded-lg border border-border-col bg-navy/20 p-4 font-mono">
+                <h3 className="text-xs font-bold text-text-primary mb-3 flex items-center gap-2 font-sans">
                   <BarChart3 size={14} className="text-info" />
-                  <span>7-Day Forecast (ARIMA Model)</span>
+                  <span>{t.sevenDayForecast}</span>
                 </h3>
                 <div className="space-y-2">
                   {prediction.predictions.map((pred, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs font-mono">
+                    <div key={idx} className="flex items-center justify-between text-xs">
                       <span className="text-text-secondary">{pred.date}</span>
                       <div className="flex items-center gap-3">
                         <span className="text-text-muted text-[10px]">
                           {pred.lowerBound}-{pred.upperBound}
                         </span>
-                        <span className="font-bold text-text-primary">{pred.predictedPatients} patients</span>
+                        <span className="font-bold text-text-primary">{pred.predictedPatients} {t.patients}</span>
                         {idx === prediction.insights.peakDay && (
                           <span className="rounded-full bg-warning/10 border border-warning/30 px-2 py-0.5 text-[8px] font-bold text-warning">
-                            PEAK
+                            {t.peak}
                           </span>
                         )}
                       </div>
@@ -334,10 +402,10 @@ export default function FootfallPage() {
               </div>
 
               {/* Recommendations */}
-              <div className="rounded-lg bg-emerald/5 border border-emerald/20 p-3">
+              <div className="rounded-lg bg-emerald/5 border border-emerald/20 p-3 font-sans">
                 <p className="text-xs font-bold text-emerald mb-2 flex items-center gap-1">
                   <CheckCircle size={12} />
-                  <span>AI Recommendations</span>
+                  <span>{t.aiRecommendations}</span>
                 </p>
                 <ul className="space-y-1 text-[10px] text-text-secondary">
                   {prediction.recommendations.map((rec, idx) => (
@@ -352,8 +420,8 @@ export default function FootfallPage() {
           ) : (
             <div className="mt-4 text-center py-8">
               <Brain size={32} className="mx-auto text-text-muted mb-2" />
-              <p className="text-xs text-text-muted">Click "Predict Next 7 Days" to run BigQuery ML forecast</p>
-              <p className="text-[10px] text-text-secondary mt-1 font-mono">Uses ARIMA_PLUS time-series model with 95% confidence</p>
+              <p className="text-xs text-text-muted">{t.clickPredict}</p>
+              <p className="text-[10px] text-text-secondary mt-1 font-mono">{t.usesArima}</p>
             </div>
           )}
         </div>

@@ -16,7 +16,11 @@ export default defineConfig({
       include: [
         'frontend/src/lib/security/**',
         'frontend/src/components/HealthScoreRing.jsx',
-        'frontend/src/components/VaaniBot.jsx'
+        'frontend/src/components/VaaniBot.jsx',
+        'frontend/src/components/CostAnalysisWidget.jsx',
+        'frontend/src/components/Navbar.jsx',
+        'frontend/src/components/Layout.jsx',
+        'backend/src/services/forecastingService.js'
       ],
       thresholds: {
         lines: 60,

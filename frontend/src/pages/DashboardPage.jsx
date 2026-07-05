@@ -1,9 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { getTranslation } from '../i18n/translations';
 import HealthScoreRing from '../components/HealthScoreRing';
-import CostAnalysisWidget from '../components/CostAnalysisWidget';
 import {
   Sparkles,
   ArrowRight,
@@ -16,13 +15,12 @@ import {
   ChevronRight,
   Stethoscope,
   CheckCircle,
-  Database,
-  Cloud,
-  CheckCircle2,
-  Clock
+  Mic,
+  Map,
+  MessageSquare,
+  Zap,
+  Brain
 } from 'lucide-react';
-import { fetchPHCData, fetchNFHSIndicators, fetchAirQualityData, fetchDiseaseOutbreaks } from '../services/publicData';
-import { SCHEDULED_FUNCTIONS } from '../services/cloudFunctions';
 
 export default function DashboardPage() {
   const {
@@ -38,81 +36,6 @@ export default function DashboardPage() {
   } = useApp();
   const navigate = useNavigate();
   const [approvedTransfers, setApprovedTransfers] = useState([]);
-  const [envData, setEnvData] = useState(null);
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
-
-  // Public data loading states
-  const [dataSourcesStatus, setDataSourcesStatus] = useState({
-    phc: { loading: true, loaded: false, error: null },
-    nfhs: { loading: true, loaded: false, error: null },
-    aqi: { loading: true, loaded: false, error: null },
-    outbreaks: { loading: true, loaded: false, error: null }
-  });
-
-  // Load public data sources on mount
-  useEffect(() => {
-    const loadPublicData = async () => {
-      // PHC Data
-      try {
-        await fetchPHCData('Tamil Nadu', 'Vellore');
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          phc: { loading: false, loaded: true, error: null }
-        }));
-      } catch (err) {
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          phc: { loading: false, loaded: false, error: err.message }
-        }));
-      }
-
-      // NFHS Data
-      try {
-        await fetchNFHSIndicators('Tamil Nadu', 'Vellore');
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          nfhs: { loading: false, loaded: true, error: null }
-        }));
-      } catch (err) {
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          nfhs: { loading: false, loaded: false, error: err.message }
-        }));
-      }
-
-      // Air Quality & Open-Meteo Environmental Telemetry
-      try {
-        const res = await fetch(`${API_BASE_URL}/telemetry/environmental`);
-        const envJson = await res.json();
-        setEnvData(envJson);
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          aqi: { loading: false, loaded: true, error: null }
-        }));
-      } catch (err) {
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          aqi: { loading: false, loaded: false, error: err.message }
-        }));
-      }
-
-      // Disease Outbreaks
-      try {
-        await fetchDiseaseOutbreaks('Tamil Nadu', 'Vellore');
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          outbreaks: { loading: false, loaded: true, error: null }
-        }));
-      } catch (err) {
-        setDataSourcesStatus(prev => ({
-          ...prev,
-          outbreaks: { loading: false, loaded: false, error: err.message }
-        }));
-      }
-    };
-
-    loadPublicData();
-  }, []);
 
   // Dynamic Telemetry Calculations
   const bedsTotal = centres.reduce((sum, c) => sum + c.bedsTotal, 0);
@@ -147,7 +70,122 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      
+      {/* AI-Powered Epic Features Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        {/* Voice AI Agent Card */}
+        <div 
+          onClick={() => {
+            const vaaniBtn = document.querySelector('[title="Ask VaaniBot - AI Agent"]');
+            if (vaaniBtn) vaaniBtn.click();
+          }}
+          className="group cursor-pointer rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-6 border border-amber-200/50 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+        >
+          {/* AI Badge */}
+          <div className="absolute top-4 right-4 flex items-center gap-1 bg-amber-600 text-white px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wide">
+            <Brain size={10} />
+            <span>AI-Powered</span>
+          </div>
+          
+          {/* Icon */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg">
+              <Mic size={32} strokeWidth={2.5} />
+              <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-400 text-amber-900">
+                <Zap size={10} />
+              </div>
+            </div>
+          </div>
+          
+          {/* Title */}
+          <h3 className="text-lg font-extrabold text-slate-900 text-center mb-2 tracking-tight">
+            Voice AI Agent
+          </h3>
+          
+          {/* Description */}
+          <p className="text-xs text-slate-600 text-center font-medium leading-relaxed">
+            Multi-modal AI assistant with natural language voice commands and real-time action execution
+          </p>
+          
+          {/* Tech Stack Indicator */}
+          <div className="mt-4 pt-3 border-t border-amber-200/50 flex items-center justify-center gap-1.5 text-[9px] text-amber-700 font-semibold">
+            <Sparkles size={10} />
+            <span>Gemini AI • Speech-to-Text</span>
+          </div>
+        </div>
+
+        {/* Live Map Card */}
+        <div 
+          onClick={() => navigate('/map')}
+          className="group cursor-pointer rounded-2xl bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-50 p-6 border border-blue-200/50 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+        >
+          {/* Live Badge */}
+          <div className="absolute top-4 right-4 flex items-center gap-1 bg-blue-600 text-white px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wide">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse"></span>
+            <span>Live Data</span>
+          </div>
+          
+          {/* Icon */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-lg">
+              <Map size={32} strokeWidth={2.5} />
+            </div>
+          </div>
+          
+          {/* Title */}
+          <h3 className="text-lg font-extrabold text-slate-900 text-center mb-2 tracking-tight">
+            Government Data Map
+          </h3>
+          
+          {/* Description */}
+          <p className="text-xs text-slate-600 text-center font-medium leading-relaxed">
+            Real-time geospatial visualization of 500+ health facilities with data.gov.in integration
+          </p>
+          
+          {/* Tech Stack Indicator */}
+          <div className="mt-4 pt-3 border-t border-blue-200/50 flex items-center justify-center gap-1.5 text-[9px] text-blue-700 font-semibold">
+            <Sparkles size={10} />
+            <span>Google Maps • Earth Engine</span>
+          </div>
+        </div>
+
+        {/* WhatsApp Alerts Card */}
+        <div 
+          onClick={() => navigate('/whatsapp')}
+          className="group cursor-pointer rounded-2xl bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-6 border border-emerald-200/50 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+        >
+          {/* Cloud Badge */}
+          <div className="absolute top-4 right-4 flex items-center gap-1 bg-emerald-600 text-white px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wide">
+            <Zap size={10} />
+            <span>Cloud API</span>
+          </div>
+          
+          {/* Icon */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg">
+              <MessageSquare size={32} strokeWidth={2.5} />
+            </div>
+          </div>
+          
+          {/* Title */}
+          <h3 className="text-lg font-extrabold text-slate-900 text-center mb-2 tracking-tight">
+            WhatsApp Alert System
+          </h3>
+          
+          {/* Description */}
+          <p className="text-xs text-slate-600 text-center font-medium leading-relaxed">
+            Automated bulk notification system reaching 1000+ healthcare workers via WhatsApp Business API
+          </p>
+          
+          {/* Tech Stack Indicator */}
+          <div className="mt-4 pt-3 border-t border-emerald-200/50 flex items-center justify-center gap-1.5 text-[9px] text-emerald-700 font-semibold">
+            <Sparkles size={10} />
+            <span>WhatsApp Business API</span>
+          </div>
+        </div>
+
+      </div>
+
       {/* 1. KPI Telemetry Row */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         
@@ -214,13 +252,15 @@ export default function DashboardPage() {
               {getTranslation('districtAITelemetry', language)}
             </h3>
             <p className="mt-1.5 text-xs font-mono leading-relaxed text-text-secondary">
-              Vellore health grid: {flaggedCentres.length} centres (
+              {getTranslation('telemetrySummaryPrefix', language).replace('{count}', flaggedCentres.length)}
               {flaggedCentres.map((c, i) => (
                 <span key={c.id} className="font-bold text-text-primary">
                   {c.name}{i < flaggedCentres.length - 1 ? ', ' : ''}
                 </span>
               ))}
-              ) require immediate multi-system intervention. We flagged {totalStockouts} medicine shortages and recommended {transfers.length} stock redistribution transfers. Open VaaniBot at bottom-right for custom queries.
+              {getTranslation('telemetrySummarySuffix', language)
+                .replace('{stockouts}', totalStockouts)
+                .replace('{transfers}', transfers.length)}
             </p>
           </div>
         </div>
@@ -427,156 +467,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Public Data Sources Status */}
-      <div className="rounded-xl border border-border-col bg-surface p-5 animate-card" style={{ animationDelay: '300ms' }}>
-        <div className="flex items-center justify-between border-b border-border-col pb-3">
-          <h2 className="text-sm font-bold text-text-primary flex items-center gap-2">
-            <Database size={16} className="text-info" />
-            <span>Official Data Sources Integration</span>
-          </h2>
-          <span className="text-[10px] text-text-muted font-mono">Real-time sync</span>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {/* PHC Data (data.gov.in) */}
-          <div className="rounded-lg border border-border-col bg-navy/30 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              {dataSourcesStatus.phc.loading && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-info border-t-transparent" />
-              )}
-              {dataSourcesStatus.phc.loaded && (
-                <CheckCircle2 size={16} className="text-emerald" />
-              )}
-              <span className="text-xs font-bold text-text-primary">data.gov.in</span>
-            </div>
-            <p className="text-[10px] text-text-muted">PHC Registry</p>
-            <p className="mt-1 text-[9px] text-text-secondary font-mono">
-              {dataSourcesStatus.phc.loaded ? '✓ 8 centres loaded' : 'Loading...'}
-            </p>
-          </div>
-
-          {/* NFHS-5 Data */}
-          <div className="rounded-lg border border-border-col bg-navy/30 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              {dataSourcesStatus.nfhs.loading && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-info border-t-transparent" />
-              )}
-              {dataSourcesStatus.nfhs.loaded && (
-                <CheckCircle2 size={16} className="text-emerald" />
-              )}
-              <span className="text-xs font-bold text-text-primary">NFHS-5</span>
-            </div>
-            <p className="text-[10px] text-text-muted">Health Indicators</p>
-            <p className="mt-1 text-[9px] text-text-secondary font-mono">
-              {dataSourcesStatus.nfhs.loaded ? '✓ 15 indicators synced' : 'Loading...'}
-            </p>
-          </div>
-
-          {/* CPCB Air Quality */}
-          <div className="rounded-lg border border-border-col bg-navy/30 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              {dataSourcesStatus.aqi.loading && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-info border-t-transparent" />
-              )}
-              {dataSourcesStatus.aqi.loaded && (
-                <CheckCircle2 size={16} className="text-emerald" />
-              )}
-              <span className="text-xs font-bold text-text-primary">CPCB</span>
-            </div>
-            <p className="text-[10px] text-text-muted">AQI & Live Weather</p>
-            <p className="mt-1 text-[9px] text-text-secondary font-mono leading-relaxed">
-              {dataSourcesStatus.aqi.loaded && envData 
-                ? `✓ AQI: ${envData.airQualityIndex} | ${envData.temperature}°C` 
-                : 'Loading...'}
-            </p>
-            {envData && (
-              <p className="text-[8px] text-emerald font-semibold font-mono mt-0.5">
-                Mosquito Risk: {envData.vectorBreedingRisk}%
-              </p>
-            )}
-          </div>
-
-          {/* IDSP Disease Outbreaks */}
-          <div className="rounded-lg border border-border-col bg-navy/30 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              {dataSourcesStatus.outbreaks.loading && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-info border-t-transparent" />
-              )}
-              {dataSourcesStatus.outbreaks.loaded && (
-                <CheckCircle2 size={16} className="text-emerald" />
-              )}
-              <span className="text-xs font-bold text-text-primary">IDSP</span>
-            </div>
-            <p className="text-[10px] text-text-muted">Disease Surveillance</p>
-            <p className="mt-1 text-[9px] text-text-secondary font-mono">
-              {dataSourcesStatus.outbreaks.loaded ? '✓ 3 outbreaks tracked' : 'Loading...'}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center gap-2 rounded-lg bg-info/5 border border-info/20 px-3 py-2">
-          <Sparkles size={14} className="text-info" />
-          <p className="text-[10px] text-info font-semibold">
-            {Object.values(dataSourcesStatus).filter(s => s.loaded).length}/4 data sources operational
-          </p>
-        </div>
-      </div>
-
-      {/* Cloud Functions Scheduled Jobs */}
-      <div className="rounded-xl border border-border-col bg-surface p-5 animate-card" style={{ animationDelay: '350ms' }}>
-        <div className="flex items-center justify-between border-b border-border-col pb-3">
-          <h2 className="text-sm font-bold text-text-primary flex items-center gap-2">
-            <Cloud size={16} className="text-warning" />
-            <span>Automated Cloud Functions</span>
-          </h2>
-          <span className="rounded-full bg-emerald/10 border border-emerald/20 px-2 py-0.5 text-[10px] font-bold text-emerald">
-            {SCHEDULED_FUNCTIONS.filter(f => f.status === 'ACTIVE').length} Active
-          </span>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          {SCHEDULED_FUNCTIONS.map((func, idx) => (
-            <div
-              key={idx}
-              className="flex items-center justify-between rounded-lg border border-border-col bg-navy/30 p-3 hover:bg-navy/50 transition-all"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-text-primary">{func.name}</span>
-                  {func.status === 'ACTIVE' && (
-                    <span className="flex h-2 w-2">
-                      <span className="animate-ping absolute h-2 w-2 rounded-full bg-emerald opacity-75"></span>
-                      <span className="relative rounded-full h-2 w-2 bg-emerald"></span>
-                    </span>
-                  )}
-                </div>
-                <p className="text-[10px] text-text-muted mt-0.5">{func.description}</p>
-                <div className="flex items-center gap-3 mt-2 text-[9px] text-text-secondary font-mono">
-                  <div className="flex items-center gap-1">
-                    <Clock size={10} />
-                    <span>Next: {new Date(func.nextRun).toLocaleString('en-IN', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald/5 border border-emerald/20 px-3 py-2">
-          <CheckCircle2 size={14} className="text-emerald" />
-          <p className="text-[10px] text-emerald font-semibold">
-            All serverless workflows operational • Last execution: {new Date(SCHEDULED_FUNCTIONS[0].lastRun).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-        </div>
-      </div>
-
-      {/* 6. Operational Cost Analysis Widget */}
-      <CostAnalysisWidget language={language} />
 
     </div>
   );

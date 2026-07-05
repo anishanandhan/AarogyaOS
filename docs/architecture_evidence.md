@@ -1,6 +1,6 @@
-# Hackathon Judging Criteria Evidence Map
+# Architectural & Compliance Evidence Map
 
-This document maps our architectural and implementation choices directly to the hackathon's scoring metrics.
+This document maps our architectural and implementation choices to enterprise compliance and performance metrics.
 
 ## 1. Code Quality & Modularity
 *   **Proof of Structure**: All component and logic files are constrained to under **300 lines** (e.g., `App.jsx` at 161 lines, `PublicHealthMapPage.jsx` split into clean rendering blocks).

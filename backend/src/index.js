@@ -35,10 +35,10 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Express Rate Limiting (Max 150 requests per 15 minutes)
+// Express Rate Limiting (Max 10000 requests per 15 minutes)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 150,
+  max: 10000,
   message: { error: 'Too many API requests from this IP. Please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false
@@ -57,6 +57,21 @@ app.use((err, req, res, next) => {
     error: 'Internal Server Error',
     message: err.message || 'An unexpected server-side error occurred.'
   });
+});
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static frontend files in production
+const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDistPath));
+
+// Fallback index.html router for SPA history mode
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
 });
 
 // Start Server

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { getTranslation } from '../i18n/translations';
-import { medicines, redistributionSuggestions } from '../data/mockData';
+import { medicines } from '../data/mockData';
 import { 
   BarChart, 
   Bar, 
@@ -16,7 +16,7 @@ import {
 import { Package, ArrowRightLeft, ArrowRight, Filter } from 'lucide-react';
 
 export default function StockPage() {
-  const { stock, centres, language } = useApp();
+  const { stock, centres, language, transfers } = useApp();
   const navigate = useNavigate();
   const [centreFilter, setCentreFilter] = useState('ALL');
 
@@ -119,7 +119,7 @@ export default function StockPage() {
                   let status = getTranslation('ok', language);
                   if (row.daysRemaining < 7) {
                     badgeClass = 'bg-danger/15 text-danger border border-danger/25 animate-pulse';
-                    status = 'CRITICAL';
+                    status = getTranslation('critical', language);
                   } else if (row.daysRemaining < 14) {
                     badgeClass = 'bg-warning/15 text-warning border border-warning/25';
                     status = getTranslation('low', language);
@@ -159,7 +159,7 @@ export default function StockPage() {
           </h2>
 
           <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
-            {redistributionSuggestions.map((s, index) => (
+            {transfers.map((s, index) => (
               <div 
                 key={index} 
                 className="rounded-lg border border-border-col/60 bg-navy/40 p-3.5 space-y-2 text-xs font-mono"
@@ -168,7 +168,7 @@ export default function StockPage() {
                   <span className={`rounded px-1.5 py-0.5 text-[8.5px] font-bold ${
                     s.urgency === 'CRITICAL' ? 'bg-danger text-white' : 'bg-warning text-navy'
                   }`}>
-                    {s.urgency}
+                    {s.urgency === 'CRITICAL' ? getTranslation('critical', language) : getTranslation('high', language)}
                   </span>
                   <span className="text-[9px] text-text-muted">{getTranslation('idTransfer', language)}{index+1}</span>
                 </div>

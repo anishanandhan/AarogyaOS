@@ -41,6 +41,10 @@ describe('Input Sanitization & Secrets Redaction Security Checks', () => {
       const xss = '<script>alert("XSS & breach");</script>';
       expect(escapeHtml(xss)).toBe('&lt;script&gt;alert(&quot;XSS &amp; breach&quot;);&lt;/script&gt;');
     });
+
+    it('should handle non-string inputs safely by stringifying them', () => {
+      expect(escapeHtml(123)).toBe('123');
+    });
   });
 
   describe('redactSecrets()', () => {
@@ -67,6 +71,10 @@ describe('Input Sanitization & Secrets Redaction Security Checks', () => {
     it('should redact email addresses', () => {
       const log = 'User logged in: support@aarogyaos.in';
       expect(redactSecrets(log)).toBe('User logged in: [REDACTED_EMAIL]');
+    });
+
+    it('should handle non-string inputs safely by stringifying them', () => {
+      expect(redactSecrets(123)).toBe('123');
     });
   });
 });

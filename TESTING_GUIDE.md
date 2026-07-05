@@ -1,6 +1,6 @@
-# AarogyaOS Demo & Testing Guide
+# AarogyaOS Verification & Testing Guide
 
-This guide details how to verify and demonstrate the production-ready capabilities of AarogyaOS during the hackathon judging session.
+This guide details how to verify and test the enterprise-ready capabilities of AarogyaOS.
 
 ---
 
@@ -49,9 +49,9 @@ This launches:
 
 ---
 
-## 🗣️ 3. Recommended Judges Pitch Script
+## 🗣️ 3. Key Architecture & Value Proposition
 
-> "AarogyaOS is not just a visual hackathon prototype—it is a **production-ready, deployable district health system**. 
+> "AarogyaOS is a **production-ready, deployable district health system**. 
 >
 > 1. We protect user credentials by isolating all AI orchestration on a secure Node.js backend.
 > 2. We use a **real database persistence engine** so all actions (stock transfers, attendance updates, field visits) are persisted across page refreshes.

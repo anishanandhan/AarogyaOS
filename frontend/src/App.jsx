@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 
 // Pages
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import AlertsPage from './pages/AlertsPage';
 import CentresPage from './pages/CentresPage';
@@ -19,12 +20,26 @@ import AgentsPage from './pages/AgentsPage';
 import CommunityImpactPage from './pages/CommunityImpactPage';
 import PublicHealthMapPage from './pages/PublicHealthMapPage';
 import CostAnalyticsPage from './pages/CostAnalyticsPage';
+import Navbar from './components/Navbar';
+import LookerAnalyticsPage from './pages/LookerAnalyticsPage';
+import WhatsAppDashboard from './pages/WhatsAppDashboard';
+
+function PublicPageWrapper({ children }) {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <Navbar />
+      <div className="pt-24 px-4 md:px-8 pb-16 max-w-7xl mx-auto">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 // Protected Route Guard
 function ProtectedRoute({ children }) {
   const { userRole } = useApp();
   if (!userRole) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }
@@ -43,7 +58,8 @@ export default function App() {
     <Router>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/public/map" element={<PublicHealthMapPage />} />
         <Route path="/map" element={
           <ProtectedRoute>
@@ -152,24 +168,34 @@ export default function App() {
           </ProtectedRoute>
         } />
 
-        <Route path="/impact" element={
+        <Route path="/looker" element={
           <ProtectedRoute>
-            <AshaRoleGuard path="/impact">
+            <AshaRoleGuard path="/looker">
               <Layout>
-                <CommunityImpactPage />
+                <LookerAnalyticsPage />
               </Layout>
             </AshaRoleGuard>
           </ProtectedRoute>
         } />
 
-        <Route path="/cost-analytics" element={
+        <Route path="/whatsapp" element={
           <ProtectedRoute>
-            <AshaRoleGuard path="/cost-analytics">
-              <Layout>
-                <CostAnalyticsPage />
-              </Layout>
-            </AshaRoleGuard>
+            <Layout>
+              <WhatsAppDashboard />
+            </Layout>
           </ProtectedRoute>
+        } />
+
+        <Route path="/impact" element={
+          <PublicPageWrapper>
+            <CommunityImpactPage />
+          </PublicPageWrapper>
+        } />
+
+        <Route path="/cost-analytics" element={
+          <PublicPageWrapper>
+            <CostAnalyticsPage />
+          </PublicPageWrapper>
         } />
 
         {/* Catch-all Fallback */}

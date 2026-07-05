@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { pool } from './alloyDb.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -212,6 +213,18 @@ class JSONDatabase {
   }
 
   async getCollection(collectionName) {
+    if (pool) {
+      try {
+        const tableName = collectionName.toLowerCase();
+        const supported = ['centres', 'stock', 'attendance', 'transfers'];
+        if (supported.includes(tableName)) {
+          const res = await pool.query(`SELECT * FROM ${tableName}`);
+          return res.rows.map(row => mapPgRowToCamel(tableName, row));
+        }
+      } catch (err) {
+        console.error(`[AlloyDB Error] Failed to get collection ${collectionName}, falling back:`, err.message);
+      }
+    }
     await this.initialize();
     return this.data[collectionName] || [];
   }
@@ -223,6 +236,50 @@ class JSONDatabase {
   }
 
   async insert(collectionName, document) {
+    if (pool) {
+      try {
+        const tableName = collectionName.toLowerCase();
+        if (tableName === 'transfers') {
+          if (!document.id) {
+            document.id = String(Date.now()) + Math.random().toString(36).substring(2, 6);
+          }
+          await pool.query(
+            `INSERT INTO transfers (id, source_centre, target_centre, medicine, quantity, status, timestamp) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [
+              document.id,
+              document.sourceCentre,
+              document.targetCentre,
+              document.medicine,
+              document.quantity,
+              document.status || 'PENDING',
+              document.timestamp || new Date().toISOString()
+            ]
+          );
+          return document;
+        }
+        if (tableName === 'attendance') {
+          if (!document.id) {
+            document.id = String(Date.now()) + Math.random().toString(36).substring(2, 6);
+          }
+          await pool.query(
+            `INSERT INTO attendance (id, centre_id, doctor_name, status, timestamp) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [
+              document.id,
+              document.centreId,
+              document.doctorName,
+              document.status,
+              document.timestamp || new Date().toISOString()
+            ]
+          );
+          return document;
+        }
+      } catch (err) {
+        console.error(`[AlloyDB Error] Failed to insert into ${collectionName}:`, err.message);
+      }
+    }
+
     await this.initialize();
     if (!this.data[collectionName]) {
       this.data[collectionName] = [];
@@ -238,6 +295,50 @@ class JSONDatabase {
   }
 
   async update(collectionName, filterFunc, updateFields) {
+    if (pool) {
+      try {
+        const tableName = collectionName.toLowerCase();
+        if (tableName === 'transfers') {
+          const res = await pool.query('SELECT * FROM transfers');
+          const rows = res.rows.map(row => mapPgRowToCamel('transfers', row));
+          let updatedCount = 0;
+          for (const row of rows) {
+            if (filterFunc(row)) {
+              await pool.query(
+                'UPDATE transfers SET status = $1 WHERE id = $2',
+                [updateFields.status || 'APPROVED', row.id]
+              );
+              updatedCount++;
+            }
+          }
+          if (updatedCount > 0) return updatedCount;
+        }
+        if (tableName === 'stock') {
+          const res = await pool.query('SELECT * FROM stock');
+          const rows = res.rows.map(row => mapPgRowToCamel('stock', row));
+          let updatedCount = 0;
+          for (const row of rows) {
+            if (filterFunc(row)) {
+              await pool.query(
+                `UPDATE stock 
+                 SET current_stock = $1 
+                 WHERE centre_id = $2 AND medicine_id = $3`,
+                [
+                  updateFields.currentStock,
+                  row.centreId,
+                  row.medicineId
+                ]
+              );
+              updatedCount++;
+            }
+          }
+          if (updatedCount > 0) return updatedCount;
+        }
+      } catch (err) {
+        console.error(`[AlloyDB Error] Failed to update ${collectionName}:`, err.message);
+      }
+    }
+
     await this.initialize();
     const collection = this.data[collectionName] || [];
     let updatedCount = 0;
@@ -257,6 +358,53 @@ class JSONDatabase {
     }
     return updatedCount;
   }
+}
+
+function mapPgRowToCamel(table, row) {
+  if (table === 'centres') {
+    return {
+      id: row.id,
+      name: row.name,
+      type: row.type,
+      block: row.block,
+      healthScore: row.health_score,
+      bedsTotal: row.beds_total,
+      bedsOccupied: row.beds_occupied,
+      doctorsOnRoll: row.doctors_on_roll,
+      doctorsPresent: row.doctors_present,
+      lastUpdated: row.last_updated ? row.last_updated.toISOString() : null,
+    };
+  }
+  if (table === 'stock') {
+    return {
+      centreId: row.centre_id,
+      medicineId: row.medicine_id,
+      currentStock: row.current_stock,
+      dailyConsumption: row.daily_consumption,
+      forecast30Days: row.forecast_30_days,
+    };
+  }
+  if (table === 'attendance') {
+    return {
+      id: row.id,
+      centreId: row.centre_id,
+      doctorName: row.doctor_name,
+      status: row.status,
+      timestamp: row.timestamp ? row.timestamp.toISOString() : null,
+    };
+  }
+  if (table === 'transfers') {
+    return {
+      id: row.id,
+      sourceCentre: row.source_centre,
+      targetCentre: row.target_centre,
+      medicine: row.medicine,
+      quantity: row.quantity,
+      status: row.status,
+      timestamp: row.timestamp ? row.timestamp.toISOString() : null,
+    };
+  }
+  return row;
 }
 
 const db = new JSONDatabase();

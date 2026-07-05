@@ -5,6 +5,13 @@ import { CalendarDays, AlertCircle, RefreshCw, Stethoscope } from 'lucide-react'
 export default function AttendancePage() {
   const { attendance, logAttendance, centres, language } = useApp();
 
+  const specializationKeys = {
+    'General Medicine': 'generalMedicine',
+    'Paediatrics': 'paediatrics',
+    'Gynaecology': 'gynaecology',
+    'General Surgery': 'generalSurgery'
+  };
+
   // Sorting: ABSENT doctors first, then by consecutiveAbsent descending, then present
   const sortedRoster = [...attendance].sort((a, b) => {
     if (a.status === 'ABSENT' && b.status === 'PRESENT') return -1;
@@ -31,17 +38,23 @@ export default function AttendancePage() {
     );
 
     if (availableDocs.length > 0) {
-      return `${getTranslation('reassign', language)} ${availableDocs[0].doctor} ${getTranslation('from', language)} ${availableDocs[0].centreName} ${getTranslation('temporarily', language)}.`;
+      return getTranslation('reassignRecommendation', language)
+        .replace('{doctor}', availableDocs[0].doctor)
+        .replace('{centre}', availableDocs[0].centreName);
     }
 
-    // Secondary search: Any GENERAL MEDICINE doctor present in the block
+    // Secondary search: Any doctor present in the block
     const fallbackDocs = attendance.filter(a =>
       a.centreId !== absentDoc.centreId &&
       a.status === 'PRESENT'
     );
 
     if (fallbackDocs.length > 0) {
-      return `${getTranslation('deploy', language)} ${fallbackDocs[0].doctor} (${fallbackDocs[0].specialization}) ${getTranslation('from', language)} ${fallbackDocs[0].centreName} ${getTranslation('asRelief', language)}.`;
+      const specText = getTranslation(specializationKeys[fallbackDocs[0].specialization] || fallbackDocs[0].specialization, language);
+      return getTranslation('deployRecommendation', language)
+        .replace('{doctor}', fallbackDocs[0].doctor)
+        .replace('{specialization}', specText)
+        .replace('{centre}', fallbackDocs[0].centreName);
     }
 
     return getTranslation('noAvailableDoctors', language);
@@ -63,7 +76,7 @@ export default function AttendancePage() {
     const opd = opdMap[c.id] || 60;
     const ratio = c.doctorsPresent > 0 ? Math.round(opd / c.doctorsPresent) : opd;
     return {
-      ratioText: `${c.doctorsPresent} present : ${opd} OPD`,
+      ratioText: `${c.doctorsPresent} ${getTranslation('present', language).toLowerCase()} : ${opd} OPD`,
       severityClass: c.doctorsPresent === 0 ? 'text-danger font-bold' : ratio > 60 ? 'text-warning font-semibold' : 'text-emerald',
       loadText: c.doctorsPresent === 0 ? 'CRITICAL (No Doctor)' : ratio > 60 ? 'High load' : 'Optimal load'
     };
@@ -101,12 +114,12 @@ export default function AttendancePage() {
                     <tr key={`${doc.centreId}-${doc.doctor}`} className="hover:bg-white/5 transition-colors">
                       <td className="p-3 font-bold text-text-primary">{doc.doctor}</td>
                       <td className="p-3 text-text-secondary">{doc.centreName}</td>
-                      <td className="p-3 text-text-muted">{doc.specialization}</td>
+                      <td className="p-3 text-text-muted">{getTranslation(specializationKeys[doc.specialization] || doc.specialization, language)}</td>
                       <td className="p-3">
                         <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${
                           isAbsent ? 'bg-danger/10 text-danger border border-danger/25' : 'bg-emerald/10 text-emerald border border-emerald/25'
                         }`}>
-                          {doc.status}
+                          {isAbsent ? getTranslation('absent', language) : getTranslation('present', language)}
                         </span>
                       </td>
                       <td className={`p-3 font-bold ${isAbsent && doc.consecutiveAbsent >= 3 ? 'text-danger animate-pulse' : 'text-text-muted'}`}>
@@ -115,9 +128,9 @@ export default function AttendancePage() {
                       <td className="p-3 text-right">
                         <button
                           onClick={() => logAttendance(doc.centreId, doc.doctor, isAbsent ? 'PRESENT' : 'ABSENT')}
-                          className="rounded border border-border-col bg-navy px-2.5 py-1 text-[10px] hover:bg-white/5 hover:text-white transition-all cursor-pointer"
+                          className="rounded border border-border-col bg-navy px-2.5 py-1 text-[10px] hover:bg-white/5 hover:text-white transition-all cursor-pointer font-sans"
                         >
-                          {getTranslation('mark', language)} {isAbsent ? getTranslation('present', language) : getTranslation('absent', language)}
+                          {isAbsent ? getTranslation('markPresent', language) : getTranslation('markAbsent', language)}
                         </button>
                       </td>
                     </tr>
@@ -151,7 +164,7 @@ export default function AttendancePage() {
                   
                   <div>
                     <h3 className="font-bold text-text-primary">{doc.doctor}</h3>
-                    <p className="text-[10px] text-text-secondary mt-0.5">{doc.centreName} · {doc.specialization}</p>
+                    <p className="text-[10px] text-text-secondary mt-0.5">{doc.centreName} · {getTranslation(specializationKeys[doc.specialization] || doc.specialization, language)}</p>
                   </div>
 
                   <div className="border-t border-border-col/40 pt-2.5 mt-2 space-y-1">

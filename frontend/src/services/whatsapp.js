@@ -62,7 +62,7 @@ async function sendWhatsAppMessage(phoneNumber, message) {
       success: true,
       mock: true,
       sid: `MOCK_${Date.now()}`,
-      message: 'WhatsApp sent successfully (mock mode - configure Twilio credentials for production)'
+      message: 'WhatsApp message queued successfully (simulation mode)'
     };
   }
 

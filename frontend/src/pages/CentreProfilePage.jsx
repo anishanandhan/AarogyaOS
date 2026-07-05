@@ -22,11 +22,90 @@ import {
   Beaker,
   CheckCircle,
   XCircle,
-  FileSpreadsheet,
   AlertTriangle,
-  History,
   Plus
 } from 'lucide-react';
+
+const localTranslations = {
+  en: {
+    ashaPerformance: "ASHA Workers Performance (Vellore Block roster)",
+    workerName: "Worker Name",
+    villageAssigned: "Village Assigned",
+    visitsRequired: "Visits/Required",
+    verifiedSuspicious: "Verified / Suspicious",
+    integrityScore: "Integrity Score",
+    verified: "verified",
+    suspicious: "suspicious",
+    diagTestAudit: "Diagnostics Test Availability Audit",
+    toggleAuditInstructions: "Toggle availability checkmarks. Changes submit audit updates automatically.",
+    lastAuditDate: "Last Audit Date:",
+    never: "Never",
+    logStockUpdateTitle: "Log Medicine Stock Update",
+    selectMedicine: "Select Medicine",
+    currentStockCount: "Current Stock Count (Units)",
+    cancel: "Cancel",
+    updateStockBtn: "Update Stock",
+    updateBedOccupancyTitle: "Update Bed Occupancy",
+    occupiedBedsLabel: "Occupied Beds",
+    updateOccupancyBtn: "Update occupancy",
+    auditDiagChecklistTitle: "Audit Diagnostics Checklist",
+    available: "AVAILABLE",
+    offline: "OFFLINE",
+    submitAuditBtn: "Submit Audit Log"
+  },
+  hi: {
+    ashaPerformance: "आशा कार्यकर्ता प्रदर्शन (वेल्लोर ब्लॉक रोस्टर)",
+    workerName: "कार्यकर्ता का नाम",
+    villageAssigned: "आवंटित गांव",
+    visitsRequired: "दौरा / आवश्यक",
+    verifiedSuspicious: "सत्यापित / संदिग्ध",
+    integrityScore: "सत्यनिष्ठा स्कोर",
+    verified: "सत्यापित",
+    suspicious: "संदिग्ध",
+    diagTestAudit: "नैदानिक परीक्षण उपलब्धता ऑडिट",
+    toggleAuditInstructions: "उपलब्धता चेकबॉक्स टॉगल करें। परिवर्तन ऑडिट अपडेट स्वचालित रूप से सबमिट करते हैं।",
+    lastAuditDate: "अंतिम ऑडिट तिथि:",
+    never: "कभी नहीं",
+    logStockUpdateTitle: "दवा स्टॉक अपडेट दर्ज करें",
+    selectMedicine: "दवा चुनें",
+    currentStockCount: "वर्तमान स्टॉक संख्या (इकाइयाँ)",
+    cancel: "रद्द करें",
+    updateStockBtn: "स्टॉक अपडेट करें",
+    updateBedOccupancyTitle: "बिस्तर अधिभोग अपडेट करें",
+    occupiedBedsLabel: "अधिकृत बिस्तर",
+    updateOccupancyBtn: "अधिभोग अपडेट करें",
+    auditDiagChecklistTitle: "नैदानिक चेकलिस्ट ऑडिट",
+    available: "उपलब्ध",
+    offline: "ऑफ़लाइन",
+    submitAuditBtn: "ऑडिट लॉग सबमिट करें"
+  },
+  ta: {
+    ashaPerformance: "ஆஷா பணியாளர்கள் செயல்திறன் (வேலூர் வட்டார பட்டியல்)",
+    workerName: "பணியாளர் பெயர்",
+    villageAssigned: "ஒதுக்கப்பட்ட கிராமம்",
+    visitsRequired: "வருகை / தேவை",
+    verifiedSuspicious: "சரிபார்க்கப்பட்டது / சந்தேகத்திற்குரியது",
+    integrityScore: "நேர்மை மதிப்பெண்",
+    verified: "சரிபார்க்கப்பட்டது",
+    suspicious: "சந்தேகத்திற்குரியது",
+    diagTestAudit: "நோயறிதல் சோதனை கிடைக்கும் தணிக்கை",
+    toggleAuditInstructions: "கிடைக்கும் சரிபார்ப்பு குறியீடுகளை மாற்றவும். மாற்றங்கள் தணிக்கை புதுப்பிப்புகளை தானாகவே சமர்ப்பிக்கும்.",
+    lastAuditDate: "கடைசி தணிக்கை தேதி:",
+    never: "ஒருபோதும் இல்லை",
+    logStockUpdateTitle: "மருந்து இருப்பு புதுப்பிப்பை பதிவு செய்க",
+    selectMedicine: "மருந்தைத் தேர்ந்தெடுக்கவும்",
+    currentStockCount: "தற்போதைய இருப்பு எண்ணிக்கை (அலகுகள்)",
+    cancel: "ரத்து செய்",
+    updateStockBtn: "இருப்பை புதுப்பி",
+    updateBedOccupancyTitle: "படுக்கை ஆக்கிரமிப்பை புதுப்பி",
+    occupiedBedsLabel: "ஆக்கிரமிக்கப்பட்ட படுக்கைகள்",
+    updateOccupancyBtn: "ஆக்கிரமிப்பை புதுப்பி",
+    auditDiagChecklistTitle: "நோயறிதல் சரிபார்ப்புப் பட்டியல் தணிக்கை",
+    available: "கிடைக்கிறது",
+    offline: "ஆஃப்லைன்",
+    submitAuditBtn: "தணிக்கை பதிவை சமர்ப்பிக்கவும்"
+  }
+};
 
 export default function CentreProfilePage() {
   const { id } = useParams();
@@ -36,7 +115,6 @@ export default function CentreProfilePage() {
     stock,
     attendance,
     asha,
-    visits,
     labs,
     updateStock,
     logAttendance,
@@ -57,13 +135,15 @@ export default function CentreProfilePage() {
 
   const [showLabModal, setShowLabModal] = useState(false);
 
+  const t = localTranslations[language] || localTranslations.en;
+
   // Find the centre
   const centre = centres.find(c => c.id === id);
   if (!centre) {
     return (
-      <div className="rounded-xl border border-border-col bg-surface p-8 text-center">
-        <p className="text-sm text-text-secondary font-mono">{getTranslation('healthCentreNotFound', language)} {id}</p>
-        <button onClick={() => navigate('/centres')} className="mt-4 rounded bg-emerald px-4 py-2 text-xs font-bold text-navy">
+      <div className="rounded-xl border border-border-col bg-surface p-8 text-center font-mono">
+        <p className="text-sm text-text-secondary">{getTranslation('healthCentreNotFound', language)} {id}</p>
+        <button onClick={() => navigate('/centres')} className="mt-4 rounded bg-emerald px-4 py-2 text-xs font-bold text-navy font-sans">
           {getTranslation('backToList', language)}
         </button>
       </div>
@@ -178,7 +258,6 @@ export default function CentreProfilePage() {
     e.preventDefault();
     if (!newBedsOccupied) return;
     
-    // Direct state mutation triggers AppContext calculation
     setCentres(prev => prev.map(c => {
       if (c.id === centre.id) {
         return {
@@ -342,7 +421,7 @@ export default function CentreProfilePage() {
                     let statusLabel = getTranslation('ok', language);
                     let statusClass = 'bg-emerald/15 text-emerald border border-emerald/20';
                     if (daysRemaining < 7) {
-                      statusLabel = 'CRITICAL';
+                      statusLabel = getTranslation('critical', language);
                       statusClass = 'bg-danger/20 text-danger border border-danger/30';
                     } else if (daysRemaining < 14) {
                       statusLabel = getTranslation('low', language);
@@ -371,7 +450,7 @@ export default function CentreProfilePage() {
           </div>
         )}
 
-        {/* TAB 2: FOOTFALL (SURGE TRACKING) */}
+        {/* TAB 2: FOOTFALL */}
         {activeTab === 'footfall' && (
           <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4">
             <div>
@@ -421,24 +500,21 @@ export default function CentreProfilePage() {
               </div>
               <button
                 onClick={() => setShowBedModal(true)}
-                className="rounded bg-navy border border-border-col px-3 py-1.5 text-[10px] font-bold text-text-secondary hover:text-white transition-all cursor-pointer"
+                className="rounded bg-navy border border-border-col px-3 py-1.5 text-[10px] font-bold text-text-secondary hover:text-white transition-all cursor-pointer font-sans"
               >
                 {getTranslation('logBedsOccupancy', language)}
               </button>
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {/* Total */}
               <div className="rounded-lg bg-navy/40 p-4 border border-border-col/40 text-center font-mono">
                 <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">{getTranslation('totalBeds', language)}</p>
                 <p className="mt-1 text-2xl font-bold text-text-primary">{centre.bedsTotal}</p>
               </div>
-              {/* Occupied */}
               <div className="rounded-lg bg-navy/40 p-4 border border-border-col/40 text-center font-mono">
                 <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">{getTranslation('occupiedBeds', language)}</p>
                 <p className="mt-1 text-2xl font-bold text-warning">{centre.bedsOccupied}</p>
               </div>
-              {/* Available */}
               <div className="rounded-lg bg-navy/40 p-4 border border-border-col/40 text-center font-mono">
                 <p className="text-[9px] text-text-muted uppercase tracking-wider font-sans">{getTranslation('availableBeds', language)}</p>
                 <p className="mt-1 text-2xl font-bold text-emerald">{centre.bedsTotal - centre.bedsOccupied}</p>
@@ -501,7 +577,7 @@ export default function CentreProfilePage() {
                         <td className="p-3 text-right">
                           <button
                             onClick={() => logAttendance(centre.id, doc.doctor, isAbsent ? 'PRESENT' : 'ABSENT')}
-                            className="rounded border border-border-col bg-navy px-2 py-1 text-[10px] hover:bg-white/5 hover:text-white transition-all cursor-pointer"
+                            className="rounded border border-border-col bg-navy px-2 py-1 text-[10px] hover:bg-white/5 hover:text-white transition-all cursor-pointer font-sans"
                           >
                             {getTranslation('set', language)} {isAbsent ? getTranslation('present', language) : getTranslation('absent', language)}
                           </button>
@@ -519,18 +595,18 @@ export default function CentreProfilePage() {
         {activeTab === 'asha' && (
           <div className="rounded-xl border border-border-col bg-surface p-5 space-y-4">
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-              ASHA Workers Performance (Vellore Block roster)
+              {t.ashaPerformance}
             </h2>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
                 <thead className="bg-navy/80 text-text-secondary uppercase text-[10px]">
                   <tr>
-                    <th className="p-3">Worker Name</th>
-                    <th className="p-3">Village Assigned</th>
-                    <th className="p-3">Visits/Required</th>
-                    <th className="p-3">Verified / Suspicious</th>
-                    <th className="p-3 text-right">Integrity Score</th>
+                    <th className="p-3">{t.workerName}</th>
+                    <th className="p-3">{t.villageAssigned}</th>
+                    <th className="p-3">{t.visitsRequired}</th>
+                    <th className="p-3">{t.verifiedSuspicious}</th>
+                    <th className="p-3 text-right">{t.integrityScore}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-col/40">
@@ -541,9 +617,9 @@ export default function CentreProfilePage() {
                         <td className="p-3 text-text-secondary">{w.village}</td>
                         <td className="p-3 text-text-secondary">{w.visitsThisWeek} / {w.visitsRequired}</td>
                         <td className="p-3 text-text-secondary">
-                          <span className="text-emerald">{w.verifiedVisits} verified</span>
+                          <span className="text-emerald">{w.verifiedVisits} {t.verified}</span>
                           <span className="text-text-muted mx-1">/</span>
-                          <span className={`${w.suspiciousVisits > 3 ? 'text-danger font-bold' : 'text-text-muted'}`}>{w.suspiciousVisits} suspicious</span>
+                          <span className={`${w.suspiciousVisits > 3 ? 'text-danger font-bold' : 'text-text-muted'}`}>{w.suspiciousVisits} {t.suspicious}</span>
                         </td>
                         <td className="p-3 text-right">
                           <span className={`rounded-full px-2 py-0.5 text-[8px] font-bold ${
@@ -569,15 +645,15 @@ export default function CentreProfilePage() {
             <div className="flex items-center justify-between border-b border-border-col/40 pb-3">
               <div>
                 <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-                  Diagnostics Test Availability Audit
+                  {t.diagTestAudit}
                 </h2>
                 <p className="text-[10px] text-text-muted mt-1 font-mono">
-                  Toggle availability checkmarks. Changes submit audit updates automatically.
+                  {t.toggleAuditInstructions}
                 </p>
               </div>
               <div className="text-right font-mono">
-                <span className="text-[10px] text-text-muted">Last Audit Date:</span>
-                <p className="text-xs font-bold text-text-primary mt-0.5">{(labs[centre.id] || {}).lastAudit || 'Never'}</p>
+                <span className="text-[10px] text-text-muted">{t.lastAuditDate}</span>
+                <p className="text-xs font-bold text-text-primary mt-0.5">{(labs[centre.id] || {}).lastAudit || t.never}</p>
               </div>
             </div>
 
@@ -612,16 +688,16 @@ export default function CentreProfilePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-xl border border-border-col bg-surface p-6 shadow-2xl animate-card">
             <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider border-b border-border-col pb-3">
-              Log Medicine Stock Update
+              {t.logStockUpdateTitle}
             </h3>
             
             <form onSubmit={handleStockUpdateSubmit} className="mt-4 space-y-4 font-mono text-xs">
               <div>
-                <label className="block text-text-secondary mb-1.5 font-sans">Select Medicine</label>
+                <label className="block text-text-secondary mb-1.5 font-sans">{t.selectMedicine}</label>
                 <select
                   value={selectedMed}
                   onChange={(e) => setSelectedMed(e.target.value)}
-                  className="w-full rounded border border-border-col bg-navy px-3 py-2 text-text-primary outline-none focus:border-emerald"
+                  className="w-full rounded border border-border-col bg-navy px-3 py-2 text-text-primary outline-none focus:border-emerald cursor-pointer"
                 >
                   {medicines.map(m => (
                     <option key={m.id} value={m.id}>{m.name} ({m.unit})</option>
@@ -630,7 +706,7 @@ export default function CentreProfilePage() {
               </div>
 
               <div>
-                <label className="block text-text-secondary mb-1.5 font-sans">Current Stock Count (Units)</label>
+                <label className="block text-text-secondary mb-1.5 font-sans">{t.currentStockCount}</label>
                 <input
                   type="number"
                   required
@@ -645,15 +721,15 @@ export default function CentreProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowStockModal(false)}
-                  className="rounded border border-border-col px-3.5 py-1.5 font-sans font-bold text-text-secondary hover:text-white"
+                  className="rounded border border-border-col px-3.5 py-1.5 font-sans font-bold text-text-secondary hover:text-white cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-emerald text-navy px-4 py-1.5 font-sans font-bold hover:scale-105 transition-all"
+                  className="rounded bg-emerald text-navy px-4 py-1.5 font-sans font-bold hover:scale-105 transition-all cursor-pointer"
                 >
-                  Update Stock
+                  {t.updateStockBtn}
                 </button>
               </div>
             </form>
@@ -666,12 +742,12 @@ export default function CentreProfilePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-xl border border-border-col bg-surface p-6 shadow-2xl animate-card">
             <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider border-b border-border-col pb-3">
-              Update Bed Occupancy
+              {t.updateBedOccupancyTitle}
             </h3>
             
             <form onSubmit={handleBedUpdateSubmit} className="mt-4 space-y-4 font-mono text-xs">
               <div>
-                <label className="block text-text-secondary mb-1.5 font-sans">Occupied Beds (Max {centre.bedsTotal})</label>
+                <label className="block text-text-secondary mb-1.5 font-sans">{t.occupiedBedsLabel} ({getTranslation('max', language)} {centre.bedsTotal})</label>
                 <input
                   type="number"
                   required
@@ -688,15 +764,15 @@ export default function CentreProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowBedModal(false)}
-                  className="rounded border border-border-col px-3.5 py-1.5 font-sans font-bold text-text-secondary hover:text-white"
+                  className="rounded border border-border-col px-3.5 py-1.5 font-sans font-bold text-text-secondary hover:text-white cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-emerald text-navy px-4 py-1.5 font-sans font-bold hover:scale-105 transition-all"
+                  className="rounded bg-emerald text-navy px-4 py-1.5 font-sans font-bold hover:scale-105 transition-all cursor-pointer"
                 >
-                  Update occupancy
+                  {t.updateOccupancyBtn}
                 </button>
               </div>
             </form>
@@ -710,11 +786,11 @@ export default function CentreProfilePage() {
           <div className="w-full max-w-lg rounded-xl border border-border-col bg-surface p-6 shadow-2xl animate-card">
             <div className="flex items-center justify-between border-b border-border-col pb-3">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-                Audit Diagnostics Checklist
+                {t.auditDiagChecklistTitle}
               </h3>
               <button 
                 onClick={() => setShowLabModal(false)}
-                className="text-text-muted hover:text-white"
+                className="text-text-muted hover:text-white cursor-pointer"
               >
                 <XCircle size={18} />
               </button>
@@ -728,11 +804,11 @@ export default function CentreProfilePage() {
                     <span className="text-xs font-mono text-text-secondary">{test}</span>
                     <button
                       onClick={() => toggleLabTest(test)}
-                      className={`rounded px-2.5 py-1 text-[10px] font-bold ${
+                      className={`rounded px-2.5 py-1 text-[10px] font-bold cursor-pointer ${
                         isAvailable ? 'bg-emerald/10 text-emerald border border-emerald/20' : 'bg-white/5 text-text-muted border border-border-col/40'
                       }`}
                     >
-                      {isAvailable ? 'AVAILABLE' : 'OFFLINE'}
+                      {isAvailable ? t.available : t.offline}
                     </button>
                   </div>
                 );
@@ -742,9 +818,9 @@ export default function CentreProfilePage() {
             <div className="mt-5 pt-3 border-t border-border-col/40 flex justify-end">
               <button
                 onClick={() => setShowLabModal(false)}
-                className="rounded bg-emerald text-navy px-4 py-1.5 text-xs font-bold hover:scale-105 transition-all cursor-pointer"
+                className="rounded bg-emerald text-navy px-4 py-1.5 text-xs font-bold hover:scale-105 transition-all cursor-pointer font-sans"
               >
-                Submit Audit Log
+                {t.submitAuditBtn}
               </button>
             </div>
           </div>

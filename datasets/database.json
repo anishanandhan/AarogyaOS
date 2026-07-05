@@ -131,7 +131,7 @@
       },
       {
         "medicineId": "m6",
-        "currentStock": 15,
+        "currentStock": 215,
         "dailyConsumption": 8,
         "forecast30Days": 240
       },
@@ -151,7 +151,7 @@
     "phc-002": [
       {
         "medicineId": "m1",
-        "currentStock": 900,
+        "currentStock": 500,
         "dailyConsumption": 38,
         "forecast30Days": 1140
       },
@@ -231,7 +231,7 @@
       },
       {
         "medicineId": "m6",
-        "currentStock": 420,
+        "currentStock": 220,
         "dailyConsumption": 8,
         "forecast30Days": 240
       },
@@ -243,7 +243,7 @@
       },
       {
         "medicineId": "m8",
-        "currentStock": 70,
+        "currentStock": 40,
         "dailyConsumption": 2,
         "forecast30Days": 60
       }
@@ -251,7 +251,7 @@
     "phc-004": [
       {
         "medicineId": "m1",
-        "currentStock": 400,
+        "currentStock": 800,
         "dailyConsumption": 25,
         "forecast30Days": 750
       },
@@ -307,7 +307,7 @@
       },
       {
         "medicineId": "m2",
-        "currentStock": 500,
+        "currentStock": 200,
         "dailyConsumption": 12,
         "forecast30Days": 360
       },
@@ -357,7 +357,7 @@
       },
       {
         "medicineId": "m2",
-        "currentStock": 8,
+        "currentStock": 308,
         "dailyConsumption": 12,
         "forecast30Days": 360
       },
@@ -393,7 +393,7 @@
       },
       {
         "medicineId": "m8",
-        "currentStock": 10,
+        "currentStock": 40,
         "dailyConsumption": 3,
         "forecast30Days": 90
       }
@@ -537,8 +537,8 @@
       "centreName": "CHC Vellore Central",
       "doctor": "Dr. Arun Kumar",
       "specialization": "Paediatrics",
-      "consecutiveAbsent": 2,
-      "status": "ABSENT"
+      "consecutiveAbsent": 0,
+      "status": "PRESENT"
     },
     {
       "centreId": "chc-001",
@@ -573,12 +573,12 @@
       "block": "Tambaram",
       "village": "Perungalathur",
       "householdsAssigned": 120,
-      "visitsThisWeek": 18,
+      "visitsThisWeek": 19,
       "visitsRequired": 20,
-      "verifiedVisits": 15,
+      "verifiedVisits": 16,
       "suspiciousVisits": 2,
-      "workerScore": 72,
-      "lastVisit": "2026-07-01T10:00:00"
+      "workerScore": 91,
+      "lastVisit": "2026-07-04T20:37:15.965Z"
     },
     {
       "id": "asha-002",
@@ -707,6 +707,18 @@
       "photoSubmitted": true,
       "verificationStatus": "VERIFIED",
       "timestamp": "2026-07-01T12:00:00"
+    },
+    {
+      "id": "v-1783197435965",
+      "workerId": "asha-001",
+      "workerName": "Lakshmi Devi",
+      "householdId": "HH-1049",
+      "visitType": "ANC Checkup",
+      "notes": "Routine blood sugar test and vitamins supply.",
+      "photoSubmitted": true,
+      "verificationStatus": "VERIFIED",
+      "suspicionReason": null,
+      "timestamp": "2026-07-04T20:37:15.965Z"
     }
   ],
   "labs": {
@@ -825,7 +837,7 @@
       "message": "ORS Sachets critically low — 0.7 days remaining at current consumption.",
       "recommendation": "Emergency transfer: 150 sachets from PHC Ranipet (surplus: 380 units)",
       "timestamp": "2026-07-01T06:30:00",
-      "dismissed": false
+      "dismissed": true
     },
     {
       "id": "a2",
@@ -880,7 +892,7 @@
       "message": "Cotrimoxazole at 1.9 days remaining. Paracetamol at 2.7 days remaining.",
       "recommendation": "Emergency stock transfer from PHC Gudiyatham (Cotrimoxazole: 420 units surplus)",
       "timestamp": "2026-07-01T06:45:00",
-      "dismissed": false
+      "dismissed": true
     },
     {
       "id": "a7",
@@ -940,12 +952,12 @@
   ],
   "transfers": [
     {
-      "from": "PHC Ranipet",
-      "to": "PHC Walajah",
-      "medicine": "ORS Sachets",
-      "quantity": 150,
+      "from": "PHC Gudiyatham",
+      "to": "PHC Arcot",
+      "medicine": "Paracetamol 500mg",
+      "quantity": 400,
       "urgency": "CRITICAL",
-      "fromSurplus": 380
+      "fromSurplus": 850
     },
     {
       "from": "PHC Gudiyatham",
@@ -953,23 +965,15 @@
       "medicine": "Cotrimoxazole",
       "quantity": 200,
       "urgency": "CRITICAL",
-      "fromSurplus": 420
+      "fromSurplus": 220
     },
     {
       "from": "PHC Kanchipuram North",
-      "to": "PHC Arcot",
-      "medicine": "Paracetamol 500mg",
-      "quantity": 400,
-      "urgency": "MEDIUM",
-      "fromSurplus": 900
-    },
-    {
-      "from": "PHC Gudiyatham",
       "to": "PHC Walajah",
-      "medicine": "Ringer Lactate IV",
-      "quantity": 30,
+      "medicine": "Amoxicillin 500mg",
+      "quantity": 200,
       "urgency": "HIGH",
-      "fromSurplus": 70
+      "fromSurplus": 600
     }
   ]
 }

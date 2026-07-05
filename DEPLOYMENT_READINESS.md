@@ -1,16 +1,16 @@
-# AarogyaOS Competition Readiness & Judge Q&A Guide
+# AarogyaOS Enterprise Deployment & Architecture Q&A Guide
 
-Prepare for technical evaluations and Q&A sessions with judges using this strategic handbook.
-
----
-
-## 💬 Core Pitch: From Prototype to Product
-
-> **The Pitch:** "Most hackathon submissions are decorative frontends wired directly to external API keys. AarogyaOS is an enterprise-ready, offline-first health coordination platform. We protect credentials with a secure Node.js backend, execute real-world resource redistribution directly on a persistent local database, run mathematical Least Squares Regression forecasts on historical visits, cache assets for offline usage in low-connectivity clinics, and provide complete cost transparency with a projected ₹12,860/month run rate per district."
+Prepare for technical reviews and deployment audits using this architectural handbook.
 
 ---
 
-## ❓ Critical Judge Questions & Strategic Answers
+## 💬 Core Platform Concept: From Prototype to Product
+
+> **Platform Architecture:** "AarogyaOS is an enterprise-ready, offline-first health coordination platform. We protect credentials with a secure Node.js backend, execute real-world resource redistribution directly on a persistent local database, run mathematical Least Squares Regression forecasts on historical visits, cache assets for offline usage in low-connectivity clinics, and provide complete cost transparency with a projected ₹12,860/month run rate per district."
+
+---
+
+## ❓ Critical Technical Questions & Architectural Answers
 
 ### Q1: "Is the AI and forecasting real, or just simulated?"
 * **Answer:** "The forecasting is 100% functional and executed on the server. When navigating to the FlowAI tab, the frontend sends historical daily clinic visits to our backend forecast route (`POST /api/v1/analytics/forecast`). The backend runs a Least Squares Linear Regression algorithm ($y = mx + c$) directly on the data, calculating the slope, intercept, and standard error of the regression to project the next 7 days' values along with 95% upper and lower confidence intervals."
@@ -41,3 +41,10 @@ Prepare for technical evaluations and Q&A sessions with judges using this strate
 * **Code References:**
   * [`tests/unit/components/VaaniBot.test.jsx`](file:///Users/anishanan/Google/tests/unit/components/VaaniBot.test.jsx)
   * [`tests/e2e/main-flow.spec.js`](file:///Users/anishanan/Google/tests/e2e/main-flow.spec.js)
+
+### Q6: "Why does the interface style align with official government health command centers?"
+* **Answer:** "We deliberately branded the interface to mirror India's MoHFW/NHM portals with official color schemes (Material Design 3 Primary Blue `#1565C0` and Healthcare Green `#2E7D32`), clear stakeholder workflow tabs, and live district command previews. Additionally, we renamed all AI sidebar widgets into professional public health terms (e.g., 'Essential Medicines', 'Patient Flow & Beds', 'Workforce Planning', 'Community Health', 'Diagnostics Audit', 'Operational Engine') to ensure a non-technical administrator's office can understand the platform within 5 minutes without getting lost in technical AI jargon."
+* **Code References:**
+  * [`frontend/src/pages/LandingPage.jsx`](file:///Users/anishanan/Google/frontend/src/pages/LandingPage.jsx)
+  * [`frontend/src/components/Layout.jsx:L143-L157`](file:///Users/anishanan/Google/frontend/src/components/Layout.jsx#L143-L157)
+  * [`frontend/src/i18n/translations.js:L4-L15`](file:///Users/anishanan/Google/frontend/src/i18n/translations.js#L4-L15)

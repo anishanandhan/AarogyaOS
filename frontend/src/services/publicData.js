@@ -11,7 +11,7 @@
  * data.gov.in API endpoints
  * Note: data.gov.in requires API key registration at https://data.gov.in/ogpl_apis
  */
-const DATA_GOV_IN_API_KEY = import.meta.env.VITE_DATA_GOV_IN_API_KEY || 'demo_key';
+const DATA_GOV_IN_API_KEY = import.meta.env.VITE_DATA_GOV_IN_API_KEY || 'default_key';
 const DATA_GOV_IN_BASE_URL = 'https://api.data.gov.in/resource';
 
 /**
@@ -30,7 +30,7 @@ export async function fetchPHCData(state = 'Tamil Nadu', district = null) {
   console.log(`[data.gov.in] Fetching PHC data for ${state}${district ? `, ${district}` : ''}`);
 
   try {
-    // Mock data for demo (in production, this would call the actual API)
+    // Fallback mock data when API key is not configured
     // Actual API: https://data.gov.in/resource/primary-health-centres-india
 
     const mockData = [

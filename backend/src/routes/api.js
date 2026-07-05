@@ -2,10 +2,11 @@ import { Router } from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { handleAgentChat, handlePhotoVerification, handleRunAgent } from '../services/geminiService.js';
+import { handleAgentChat, handlePhotoVerification, handleRunAgent, handleMedicalTriage } from '../services/geminiService.js';
 import { getDatabaseStatus } from '../config/db.js';
 import db from '../config/jsonDb.js';
 import { calculateForecast } from '../services/forecastingService.js';
+import { executeQuery } from '../services/bigQueryService.js';
 
 const router = Router();
 
@@ -94,6 +95,17 @@ router.get('/telemetry/transfers', async (req, res, next) => {
   try {
     const transfers = await db.getCollection('transfers');
     res.json(transfers);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/v1/analytics/query
+router.post('/analytics/query', async (req, res, next) => {
+  try {
+    const { query } = req.body;
+    const results = await executeQuery(query);
+    res.json(results);
   } catch (err) {
     next(err);
   }
@@ -292,6 +304,22 @@ router.post('/audit', async (req, res, next) => {
   }
 });
 
+// POST /api/v1/triage
+router.post('/triage', async (req, res, next) => {
+  const { base64Image, patientInfo } = req.body;
+
+  if (!base64Image) {
+    return res.status(400).json({ error: 'Missing required parameter: base64Image.' });
+  }
+
+  try {
+    const triageResult = await handleMedicalTriage(base64Image, patientInfo || {});
+    res.json(triageResult);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/v1/agent/run
 router.post('/agent/run', async (req, res, next) => {
   const { agentRole, districtData } = req.body;
@@ -311,12 +339,12 @@ router.post('/agent/run', async (req, res, next) => {
 // GET /api/v1/telemetry/environmental
 router.get('/telemetry/environmental', async (req, res, next) => {
   try {
-    const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=12.9165&longitude=79.1325&current=temperature_2m,relative_humidity,rain,apparent_temperature');
+    const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=12.9165&longitude=79.1325&current=temperature_2m,relative_humidity_2m,precipitation,apparent_temperature&timezone=Asia/Kolkata');
     const weatherData = await weatherRes.json();
-    
-    const temp = weatherData.current.temperature_2m;
-    const humidity = weatherData.current.relative_humidity;
-    const rain = weatherData.current.rain;
+
+    const temp = weatherData.current?.temperature_2m || 30;
+    const humidity = weatherData.current?.relative_humidity_2m || 65;
+    const rain = weatherData.current?.precipitation || 0;
 
     const humidityFactor = Math.min(100, Math.max(0, (humidity - 40) * 1.6));
     const tempFactor = temp >= 22 && temp <= 32 ? 100 : Math.max(0, 100 - Math.abs(27 - temp) * 10);

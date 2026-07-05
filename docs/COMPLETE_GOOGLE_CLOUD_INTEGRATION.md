@@ -98,7 +98,7 @@
 - Hands-free alert approval during surgeries
 - Touch-free navigation in sterile environments
 - Accessibility for mobility-impaired users
-- Demo mode (keyboard simulation: press 1-7)
+- Simulation mode (keyboard simulation: press 1-7)
 
 ---
 
@@ -358,7 +358,7 @@ await initializeMediaPipe(videoElement, (gestureData) => {
   }
 });
 
-// Demo mode: Press 1-7 on keyboard to simulate gestures
+// Simulation mode: Press 1-7 on keyboard to simulate gestures
 ```
 
 ### 3. Public Health Data
@@ -472,9 +472,9 @@ VITE_CLOUD_TRANSLATION_API_KEY=YOUR_CLOUD_TRANSLATION_API_KEY_HERE
 
 # Optional: Advanced Features
 VITE_GOOGLE_CLOUD_API_KEY=<your_key>        # Speech/TTS
-VITE_GOOGLE_CLOUD_PROJECT_ID=smart-health-demo
+VITE_GOOGLE_CLOUD_PROJECT_ID=aarogyaos-enterprise
 VITE_DATA_GOV_IN_API_KEY=<get_from_data.gov.in>
-VITE_CLOUD_FUNCTIONS_URL=https://us-central1-smart-health-demo.cloudfunctions.net
+VITE_CLOUD_FUNCTIONS_URL=https://us-central1-aarogyaos-enterprise.cloudfunctions.net
 
 # Optional: Messaging
 VITE_TWILIO_ACCOUNT_SID=<your_sid>
@@ -501,7 +501,7 @@ VITE_TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
 
 ---
 
-## 🎯 Hackathon Impact
+## 🎯 Platform Impact
 
 ### Problem Addressed
 Smart Health (AarogyaOS) addresses **district health management operational gaps** in India's 750+ districts, especially in rural Primary Health Centres (PHCs).
@@ -595,8 +595,8 @@ CMD ["serve", "-s", "dist", "-l", "8080"]
 
 ```bash
 # Build and deploy
-gcloud builds submit --tag gcr.io/smart-health-demo/aarogyaos
-gcloud run deploy aarogyaos --image gcr.io/smart-health-demo/aarogyaos --region us-central1 --platform managed
+gcloud builds submit --tag gcr.io/aarogyaos-enterprise/aarogyaos
+gcloud run deploy aarogyaos --image gcr.io/aarogyaos-enterprise/aarogyaos --region us-central1 --platform managed
 ```
 
 ---
@@ -609,7 +609,7 @@ gcloud run deploy aarogyaos --image gcr.io/smart-health-demo/aarogyaos --region 
 - [ ] Switch language and verify voice changes (EN/HI/TA)
 
 ### Gesture Recognition
-- [ ] Press keys 1-7 to simulate gestures (demo mode)
+- [ ] Press keys 1-7 to simulate gestures (simulation mode)
 - [ ] Verify gesture actions trigger (console logs)
 
 ### Maps
@@ -651,7 +651,7 @@ gcloud run deploy aarogyaos --image gcr.io/smart-health-demo/aarogyaos --region 
 
 ## 📞 Support
 
-For hackathon submission questions:
+For technical integration questions:
 - Email: anisha@example.com
 - GitHub: https://github.com/yourusername/smart-health
 
@@ -664,10 +664,10 @@ For hackathon submission questions:
 **✅ PRODUCTION READY**
 **✅ DOCUMENTATION COMPLETE**
 
-**Smart Health (AarogyaOS) is ready for Google Cloud Build with AI Hackathon 2026 submission!** 🚀
+**Smart Health (AarogyaOS) is ready for production deployment!** 🚀
 
 ---
 
 *Generated: July 2, 2026*
-*Build Version: v1.0.0-hackathon*
+*Build Version: v1.0.0-enterprise*
 *Google Cloud AI Stack: COMPLETE*

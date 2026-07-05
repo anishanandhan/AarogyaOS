@@ -8,7 +8,7 @@
  * - Air quality correlation via satellite data
  */
 
-const EARTH_ENGINE_PROJECT = import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'smart-health-demo';
+const EARTH_ENGINE_PROJECT = import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'aarogyaos-enterprise';
 
 /**
  * Earth Engine datasets used for health analysis
