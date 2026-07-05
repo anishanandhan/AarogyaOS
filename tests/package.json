@@ -9,7 +9,7 @@
     "test:e2e": "playwright test --config playwright.config.js"
   },
   "dependencies": {
-    "@playwright/test": "^1.50.0",
+    "@playwright/test": "^1.61.1",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.9",
     "axe-playwright": "^2.2.2",
