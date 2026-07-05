@@ -2,15 +2,19 @@
 # Stage 1: Build the React Frontend
 # ================================================
 FROM node:20-alpine AS frontend-builder
-WORKDIR /app/frontend
+WORKDIR /app
 
-# Copy frontend config and build settings
-COPY frontend/package*.json ./
+# Copy root monorepo config
+COPY package*.json ./
+COPY frontend/package*.json ./frontend/
+COPY backend/package*.json ./backend/
+
+# Install workspace dependencies
 RUN npm ci
 
 # Copy frontend source and build static assets
-COPY frontend/ ./
-RUN npm run build
+COPY frontend/ ./frontend/
+RUN npm run build --prefix frontend
 
 # ================================================
 # Stage 2: Create the Unified Production Container
@@ -23,8 +27,9 @@ ENV NODE_ENV=production
 ENV PORT=8080
 
 # Setup the backend service
+COPY package*.json ./
 COPY backend/package*.json ./backend/
-RUN npm ci --prefix backend --only=production
+RUN npm ci --omit=dev
 
 # Copy backend source
 COPY backend/ ./backend/
