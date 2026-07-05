@@ -7,6 +7,16 @@
     "sdk",
     "tests"
   ],
+  "supportedArchitectures": {
+    "os": [
+      "darwin",
+      "linux"
+    ],
+    "cpu": [
+      "x64",
+      "arm64"
+    ]
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "npm run dev --prefix frontend",
